@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Thermal_Image_Processing_Pipeline</string>
+    <string name="hej">Hej</string>
+    <string name="hwww">Hwww</string>
+    <string name="empty">Empty</string>
+    <string name="hint">hint</string>
+</resources>
