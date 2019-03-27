@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
@@ -37,7 +38,8 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 TextView txt = findViewById(R.id.textView);
-                img = FileManagement.readFile(MainActivity.this, "Raw_raw000000");
+                //img = FileManagement.readFile(MainActivity.this, "Raw_raw000000");
+                img = FileManagement.readFile(MainActivity.this, "shutter.raw_off000000");
                 if(img != null){
                     txt.setText("First: " + img.getWidth() + ", second: " + img.getHeight());
                     TextView txt2 = findViewById(R.id.textView2);
@@ -55,8 +57,18 @@ public class MainActivity extends AppCompatActivity {
         final Button button2 = findViewById(R.id.button_2);
         button2.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                ImageView imgView = findViewById(R.id.imageView);
-                FileManagement.writeFile( MainActivity.this,"img", img, canvas, imgView);
+
+                // Image 1
+                img = FileManagement.readFile(MainActivity.this, "bridge");
+                ImageView imgView = findViewById(R.id.imageView1);
+                if(img != null)
+                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.GREEN), imgView);
+
+                // Image 2
+                img = FileManagement.readFile(MainActivity.this, "bridge");
+                imgView = findViewById(R.id.imageView2);
+                if(img !=null)
+                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.BLUE), imgView);
             }
         });
     }

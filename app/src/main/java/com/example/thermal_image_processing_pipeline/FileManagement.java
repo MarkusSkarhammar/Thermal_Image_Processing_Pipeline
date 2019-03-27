@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Environment;
 import android.widget.ImageView;
 
@@ -21,45 +22,15 @@ import java.util.ArrayList;
 
 import androidx.core.app.ActivityCompat;
 
-import static android.graphics.Bitmap.Config.ARGB_4444;
+import static android.graphics.Bitmap.Config.RGB_565;
 
 
 public class FileManagement {
 
-    public static void writeFile(Activity a, String name, PGMImage image, Canvas canvas, ImageView imgView){
+    public static void writeFile(Activity a, String name, PGMImage image){
 
         int permission = ActivityCompat.checkSelfPermission(a, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
-        //if (permission == PackageManager.PERMISSION_GRANTED) {
-
-        /*ByteBuffer byteBuffer = ByteBuffer.allocate(img.length * 4);
-        IntBuffer intBuffer = byteBuffer.asIntBuffer();
-        intBuffer.put(img);
-        */
-
-        //File sdcard = Environment.getExternalStorageDirectory();
-
-        ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
-        int[] img = null;
-        Bitmap _bitmapScaled = Bitmap.createBitmap(image.getWidth(), image.getHeight(),  Bitmap.Config.ARGB_8888);
-
-        for(int i = 0; i < image.getHeight(); i++){
-            img = image.getRowAt(i);
-            _bitmapScaled.setPixels(img, 0, img.length, 0, i, img.length, 1);
-        }
-        img = image.getRowAt(0);
-        System.out.println("img value: " + img[0]);
-        _bitmapScaled.getPixels(img, 0, img.length, 0, 0, 1, 1);
-        /*for(int i = 0; i < img.length; i++){
-            if(img[i] != 0)
-                System.out.println("img value: " + img[i]);
-        }*/
-        //_bitmapScaled = FileManagement.toGrayscale(_bitmapScaled);
-        //_bitmapScaled.setPixel(50, 50, img[50]);
-        DrawCanvas(_bitmapScaled, imgView);
-        /*}else{
-            System.out.println("Saknar Permission");
-        }*/
     }
 
     public static Bitmap toGrayscale(Bitmap bmpOriginal)
@@ -113,22 +84,5 @@ public class FileManagement {
             return null;
     }
 
-    public static void DrawCanvas(Bitmap b, ImageView img){
-
-        Canvas canvas = new Canvas(b);
-
-        //canvas.drawColor(Color.CYAN);
-
-        canvas.drawBitmap(
-                b,
-                0,
-                0,
-                null
-        );
-
-
-        img.setImageBitmap(b);
-
-    }
 }
 
