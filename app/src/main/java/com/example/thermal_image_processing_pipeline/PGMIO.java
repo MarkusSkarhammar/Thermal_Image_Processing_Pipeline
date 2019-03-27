@@ -61,6 +61,11 @@ public final class PGMIO {
      */
     private static final int MAXVAL = 65536;
 
+    /**
+     *  Read two bytes per stride
+     */
+    private static final int TWOBYTES = 2;
+
     private PGMIO() {}
 
     /**
@@ -70,6 +75,7 @@ public final class PGMIO {
      * @throws IOException
      */
     public static PGMImage read(final File file) throws IOException {
+        int amount = 1;
         final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
         try {
             if (!next(stream).equals(MAGIC))
@@ -79,13 +85,15 @@ public final class PGMIO {
             final int max = Integer.parseInt(next(stream));
             if (max < 0 || max > MAXVAL)
                 throw new IOException("The image's maximum gray value must be in range [0, " + MAXVAL + "].");
+            if (max > 255)
+                amount = 2;
             final int[][] image = new int[row][col];
             for (int i = 0; i < row; ++i) {
                 for (int j = 0; j < col; ++j) {
-                    final int p = stream.read();
+                    final int p = getData(stream, amount);
                     if (p == -1)
                         throw new IOException("Reached end-of-file prematurely.");
-                    else if (p < 0 || p > max)
+                    else if (p < 0 || p > MAXVAL)
                         throw new IOException("Pixel value " + p + " outside of range [0, " + max + "].");
                     image[i][j] = p;
                 }
@@ -130,6 +138,23 @@ public final class PGMIO {
         for (int i = 0; i < bytesArray.length; ++i)
             bytesArray[i] = bytes.get(i);
         return new String(bytesArray);
+    }
+
+    private static int getData(final InputStream stream, int amount) throws IOException{
+        final ArrayList<Integer> bytes = new ArrayList<Integer>();
+        while(bytes.size() < amount){
+            final int b = stream.read();
+
+            if(b != -1){
+                bytes.add(b);
+            }
+        }
+        if(bytes.size()>1){
+            int c = bytes.get(0) << 8;
+            c = (c | bytes.get(1));
+            return c;
+        }else
+            return bytes.get(0);
     }
 
     /**
