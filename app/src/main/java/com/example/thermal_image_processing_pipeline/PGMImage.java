@@ -3,12 +3,14 @@ package com.example.thermal_image_processing_pipeline;
 public class PGMImage {
     private int[][] data;
     private int width, height, maxValue;
+    private boolean hasBeenProcessed;
 
     public PGMImage(int[][] data, int maxValue){
         this.data = data;
         this.width = data.length;
         this.height = data[0].length;
         this.maxValue = maxValue;
+        this.hasBeenProcessed = false;
     }
 
     public int getWidth() { return width; };
@@ -33,6 +35,18 @@ public class PGMImage {
 
     public int getDataAt(int row, int col){
         return data[row][col];
+    }
+
+    public void setDataAt(int x, int y, int v){
+        data[x][y] = v;
+    }
+
+    public void setData(int[][] data){
+        this.data = data;
+    }
+
+    public int[][] getData(){
+        return data;
     }
 
 }

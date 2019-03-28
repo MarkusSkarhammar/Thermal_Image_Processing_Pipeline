@@ -13,9 +13,12 @@ import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.pipeline.thermal_image_processing_pipeline.Pipeline;
+
 public class MainActivity extends AppCompatActivity {
-    PGMImage img = null;
+    PGMImage img = null, img2 = null, shutter = null;
     Canvas canvas= null;
+    Pipeline pipeline = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,18 +60,21 @@ public class MainActivity extends AppCompatActivity {
         final Button button2 = findViewById(R.id.button_2);
         button2.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
+                shutter = FileManagement.readFile(MainActivity.this, "Shutter_off000000");
+                pipeline = new Pipeline(MainActivity.this, shutter.getWidth(), shutter.getHeight());
+                pipeline.getShutterValues(shutter);
                 // Image 1
                 img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
+                pipeline.processImage(img);
                 ImageView imgView = findViewById(R.id.imageView1);
                 if(img != null)
                     DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
 
                 // Image 2
-                //img = FileManagement.readFile(MainActivity.this, "bridge");
+                img2 = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
                 imgView = findViewById(R.id.imageView2);
-                if(img !=null)
-                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.RED), imgView);
+                if(img2 !=null)
+                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img2), imgView);
 
                 imgView = findViewById(R.id.imageView3);
                 if(img !=null)

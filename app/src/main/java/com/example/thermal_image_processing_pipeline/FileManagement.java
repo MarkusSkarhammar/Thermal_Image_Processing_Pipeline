@@ -13,11 +13,17 @@ import android.graphics.Rect;
 import android.os.Environment;
 import android.widget.ImageView;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import androidx.core.app.ActivityCompat;
@@ -31,6 +37,69 @@ public class FileManagement {
 
         int permission = ActivityCompat.checkSelfPermission(a, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
+    }
+
+    public static float[][] getGain(Activity a, String filename, int width, int height){
+        final float[][] gain = new float[width][height];
+
+        // Check if we have read permission
+        int permission = ActivityCompat.checkSelfPermission(a, Manifest.permission.READ_EXTERNAL_STORAGE);
+
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            //Find the directory for the SD Card using the API
+            //*Don't* hardcode "/sdcard"
+            File sdcard = Environment.getExternalStorageDirectory();
+
+            //Get the text file
+            File file = new File(sdcard, "/Download/" + filename + ".lgc");
+
+            if (file.exists()) {
+
+                try {
+                    byte[] data = Files.readAllBytes(Paths.get(file.getPath()));
+
+                    final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
+                    int largest = 0, pos = 0, c, b1, b2;
+
+
+                    for(int y = 0; y < height; ++y){
+                        for(int x = 0; x < width; ++x){
+                            /*b1 = data[pos];
+                            b2 = data[pos+1];
+                            b1 = b1 << 8;
+                            b1 = (b1 | b2);
+                            gain[x][y] = b1;
+                            pos++;*/
+                            final int readValue1 = stream.read();
+                            if(readValue1 != -1){
+                                final int readValue2 = stream.read();
+                                if(readValue2 != -1){
+                                    b1 = readValue1; b2 = readValue2;
+                                    c = b1 << 8;
+                                    c = (c | b2);
+                                    if(c > largest)
+                                        largest = c;
+                                    gain[x][y] = c/(float)largest;
+                                    //gain[x][y] = c;
+                                }else
+                                    break;
+                            }else
+                                break;
+                        }
+                    }
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                return gain;
+            }
+
+        }
+
+        return gain;
     }
 
     public static Bitmap toGrayscale(Bitmap bmpOriginal)

@@ -58,7 +58,7 @@ public class DisplayHandler {
         int colorValue = (int) ( (double) (((double)intensity / (double)image.getMaxValue()) * 255) );
         switch(intensity){
             case 0:
-                return Color.BLACK;
+                return Color.GREEN;
             case 255:
                 return Color.WHITE;
                 default:
@@ -68,7 +68,7 @@ public class DisplayHandler {
                     else if(color == BLUE)
                         return c.rgb(0, 0, colorValue);
                     else if(color == GREEN)
-                        return c.rgb(0, colorValue, 0);
+                        return c.rgb(0, 255- colorValue, 0);
                     else
                     return c.rgb(colorValue, colorValue, colorValue);
         }
