@@ -88,8 +88,8 @@ public final class PGMIO {
             if (max > 255)
                 amount = 2;
             final int[][] image = new int[row][col];
-            for (int i = 0; i < row; ++i) {
-                for (int j = 0; j < col; ++j) {
+            for (int j = 0; j < col; ++j) {
+                for (int i = 0; i < row; ++i) {
                     final int p = getData(stream, amount);
                     if (p == -1)
                         throw new IOException("Reached end-of-file prematurely.");

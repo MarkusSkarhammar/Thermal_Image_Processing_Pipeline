@@ -59,14 +59,22 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 // Image 1
-                img = FileManagement.readFile(MainActivity.this, "Raw_raw000000");
+                img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
                 ImageView imgView = findViewById(R.id.imageView1);
                 if(img != null)
                     DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
 
                 // Image 2
-                img = FileManagement.readFile(MainActivity.this, "bridge");
+                //img = FileManagement.readFile(MainActivity.this, "bridge");
                 imgView = findViewById(R.id.imageView2);
+                if(img !=null)
+                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.RED), imgView);
+
+                imgView = findViewById(R.id.imageView3);
+                if(img !=null)
+                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.GREEN), imgView);
+
+                imgView = findViewById(R.id.imageView4);
                 if(img !=null)
                     DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.BLUE), imgView);
             }

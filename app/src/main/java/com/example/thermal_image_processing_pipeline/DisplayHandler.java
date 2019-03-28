@@ -26,9 +26,10 @@ public class DisplayHandler {
     private static Bitmap generateBitmap(PGMImage image, int color){
         Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),  RGB_565);
 
-        for(int y = 0; y < image.getHeight(); y++){
-            for(int x = 0; x < image.getWidth(); x++){
-                bitmap.setPixel(x, y, getColor(image.getDataAt(x, y), color));
+
+        for(int x = 0; x < image.getWidth(); x++){
+            for(int y = 0; y < image.getHeight(); y++){
+                bitmap.setPixel(x, y, getColor(image.getDataAt(x, y), color, image));
             }
         }
         return bitmap;
@@ -40,8 +41,8 @@ public class DisplayHandler {
 
         //canvas.drawColor(Color.CYAN);
         Rect source = new Rect(0, 0, b.getWidth(), b.getHeight());
-        b = rotate(b, 90);
-        b = flipHorizontal(b);
+        //b = rotate(b, 90);
+        //b = flipHorizontal(b);
         canvas.drawBitmap(
                 b,
                 null,
@@ -53,7 +54,8 @@ public class DisplayHandler {
 
     }
 
-    private static int getColor(int intensity, int color){
+    private static int getColor(int intensity, int color, PGMImage image){
+        int colorValue = (int) ( (double) (((double)intensity / (double)image.getMaxValue()) * 255) );
         switch(intensity){
             case 0:
                 return Color.BLACK;
@@ -62,13 +64,13 @@ public class DisplayHandler {
                 default:
                     Color c = new Color();
                     if(color == RED)
-                        return c.rgb(intensity, 0, 0);
+                        return c.rgb(colorValue, 0, 0);
                     else if(color == BLUE)
-                        return c.rgb(0, 0, intensity);
+                        return c.rgb(0, 0, colorValue);
                     else if(color == GREEN)
-                        return c.rgb(0, intensity, 0);
+                        return c.rgb(0, colorValue, 0);
                     else
-                    return c.rgb(intensity, intensity, intensity);
+                    return c.rgb(colorValue, colorValue, colorValue);
         }
     }
 
