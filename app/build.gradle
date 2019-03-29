@@ -26,4 +26,7 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'
     implementation 'com.google.android.material:material:1.0.0'
+
+    implementation 'com.jjoe64:graphview:4.2.2' // Necessary for the GraphView graph plotting library.
+
 }
