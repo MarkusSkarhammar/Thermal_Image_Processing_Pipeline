@@ -54,12 +54,11 @@ public class FileManagement {
             File file = new File(sdcard, "/Download/" + filename + ".lgc");
 
             if (file.exists()) {
-
+                int largest = 0, pos = 0, c, b1, b2;
                 try {
                     byte[] data = Files.readAllBytes(Paths.get(file.getPath()));
 
                     final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
-                    int largest = 0, pos = 0, c, b1, b2;
 
 
                     for(int y = 0; y < height; ++y){
@@ -79,12 +78,18 @@ public class FileManagement {
                                     c = (c | b2);
                                     if(c > largest)
                                         largest = c;
-                                    gain[x][y] = c/(float)largest;
-                                    //gain[x][y] = c;
+                                    //gain[x][y] = c/(float)largest;
+                                    gain[x][y] = c;
                                 }else
                                     break;
                             }else
                                 break;
+                        }
+                    }
+
+                    for(int y = 0; y < height; ++y){
+                        for(int x = 0; x < width; ++x){
+                            gain[x][y] /= largest;
                         }
                     }
 

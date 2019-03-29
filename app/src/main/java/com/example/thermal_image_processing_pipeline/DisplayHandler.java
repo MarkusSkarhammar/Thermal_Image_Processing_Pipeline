@@ -55,22 +55,22 @@ public class DisplayHandler {
     }
 
     private static int getColor(int intensity, int color, PGMImage image){
-        int colorValue = (int) ( (double) (((double)intensity / (double)image.getMaxValue()) * 255) );
-        switch(intensity){
-            case 0:
-                return Color.GREEN;
-            case 255:
-                return Color.WHITE;
-                default:
-                    Color c = new Color();
-                    if(color == RED)
-                        return c.rgb(colorValue, 0, 0);
-                    else if(color == BLUE)
-                        return c.rgb(0, 0, colorValue);
-                    else if(color == GREEN)
-                        return c.rgb(0, 255- colorValue, 0);
-                    else
-                    return c.rgb(colorValue, colorValue, colorValue);
+        Color c = new Color();
+        int colorValue = (int) ( (double) (((double)intensity / image.getMaxValue()) * 255) );
+        colorValue = Math.abs(colorValue);
+        if(colorValue == 0){
+            return Color.BLACK;
+        }else if(colorValue == 255){
+            return Color.WHITE;
+        }else{
+            if(color == RED)
+                return c.rgb(255-colorValue, 0, 0);
+            else if(color == BLUE)
+                return c.rgb(0, 0, 255-colorValue);
+            else if(color == GREEN)
+                return c.rgb(0, 255-colorValue, 0);
+            else
+                return c.rgb(255-colorValue, 255-colorValue, 255-colorValue);
         }
     }
 

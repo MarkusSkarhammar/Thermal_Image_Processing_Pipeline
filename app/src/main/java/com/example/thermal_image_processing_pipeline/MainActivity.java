@@ -70,16 +70,15 @@ public class MainActivity extends AppCompatActivity {
                 if(img != null)
                     DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
 
-                // Image 2
-                img2 = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
                 imgView = findViewById(R.id.imageView2);
-                if(img2 !=null)
-                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img2), imgView);
+                if(img !=null)
+                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.RED), imgView);
 
                 imgView = findViewById(R.id.imageView3);
                 if(img !=null)
                     DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.GREEN), imgView);
 
+                img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
                 imgView = findViewById(R.id.imageView4);
                 if(img !=null)
                     DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.BLUE), imgView);

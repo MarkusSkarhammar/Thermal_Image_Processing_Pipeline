@@ -17,6 +17,8 @@ public class PGMImage {
     public int getHeight() { return height; };
     public int getMaxValue() { return maxValue; };
 
+    public void setMaxValue(final int maxValue) { this.maxValue = maxValue; };
+
     public int[] getRowAt(int col){
         int[] newRow = new int[width];
         for(int i = 0; i < width; i++){

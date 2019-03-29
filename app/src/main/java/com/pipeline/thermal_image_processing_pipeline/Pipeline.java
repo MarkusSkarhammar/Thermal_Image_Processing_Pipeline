@@ -25,6 +25,7 @@ public class Pipeline {
      * @return The processed thermal image.
      */
     public void processImage(PGMImage image){
+
         shutter_correction(image);
     }
 
@@ -38,10 +39,22 @@ public class Pipeline {
     }
 
     private void shutter_correction(PGMImage image){
-        shutter.applyShutter(image, gain);
+        shutter.applyShutterAndGain(image, gain);
+        checkMaxValue(image);
     }
 
     private void getGain(Activity a, int width, int height){
         gain = FileManagement.getGain(a, "supplied", width, height);
+    }
+
+    private void checkMaxValue(PGMImage image){
+        int maxValue = 0, data = 0;
+        for(int y = 0; y < image.getHeight(); ++y){
+            for(int x = 0; x < image.getWidth(); ++x){
+                if((data = image.getDataAt(x, y)) > maxValue)
+                    maxValue = data;
+            }
+        }
+        image.setMaxValue(maxValue);
     }
 }
