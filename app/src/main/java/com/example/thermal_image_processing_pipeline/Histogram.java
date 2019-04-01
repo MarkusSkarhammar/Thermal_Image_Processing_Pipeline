@@ -1,12 +1,9 @@
 package com.example.thermal_image_processing_pipeline;
 
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.BarGraphSeries;
-import com.jjoe64.graphview.series.DataPoint;
 
 public class Histogram {
 
-    private static void createHistogram(PGMImage img, GraphView graph) {
+    private static void createHistogram(PGMImage img/*, GraphView graph*/) {
 
     	/*
 
@@ -32,7 +29,7 @@ public class Histogram {
                 }
             }
         }
-
+        /*
         DataPoint[] dp = new DataPoint[tones.length];
         for (int i : tones) {
             dp[i] = new DataPoint(tones[i], yAxisHeight);
@@ -43,6 +40,6 @@ public class Histogram {
 
         // draw values on top
         series.setDrawValuesOnTop(true);
-
+        */
     }
 }

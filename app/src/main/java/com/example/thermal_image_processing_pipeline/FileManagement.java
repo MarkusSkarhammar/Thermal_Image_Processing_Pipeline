@@ -40,7 +40,7 @@ public class FileManagement {
     }
 
     public static float[][] getGain(Activity a, String filename, int width, int height){
-        final float[][] gain = new float[width][height];
+        final float[][] gain = new float[height][width];
 
         // Check if we have read permission
         int permission = ActivityCompat.checkSelfPermission(a, Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -54,7 +54,7 @@ public class FileManagement {
             File file = new File(sdcard, "/Download/" + filename + ".lgc");
 
             if (file.exists()) {
-                int largest = 0, pos = 0, c, b1, b2;
+                int largest = 0, c, b1, b2;
                 try {
                     byte[] data = Files.readAllBytes(Paths.get(file.getPath()));
 
@@ -63,12 +63,6 @@ public class FileManagement {
 
                     for(int y = 0; y < height; ++y){
                         for(int x = 0; x < width; ++x){
-                            /*b1 = data[pos];
-                            b2 = data[pos+1];
-                            b1 = b1 << 8;
-                            b1 = (b1 | b2);
-                            gain[x][y] = b1;
-                            pos++;*/
                             final int readValue1 = stream.read();
                             if(readValue1 != -1){
                                 final int readValue2 = stream.read();
@@ -79,7 +73,7 @@ public class FileManagement {
                                     if(c > largest)
                                         largest = c;
                                     //gain[x][y] = c/(float)largest;
-                                    gain[x][y] = c;
+                                    gain[y][x] = c;
                                 }else
                                     break;
                             }else
@@ -89,7 +83,7 @@ public class FileManagement {
 
                     for(int y = 0; y < height; ++y){
                         for(int x = 0; x < width; ++x){
-                            gain[x][y] /= largest;
+                            gain[y][x] /= largest;
                         }
                     }
 
