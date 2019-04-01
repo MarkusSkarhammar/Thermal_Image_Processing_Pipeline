@@ -3,9 +3,9 @@ package com.pipeline.thermal_image_processing_pipeline;
 public class PixelTableEntry {
     int pixel, amount;
 
-    public PixelTableEntry(int pixel){
+    public PixelTableEntry(int pixel, int amount){
         this.pixel = pixel;
-        amount = 1;
+        this.amount = amount;
     }
 
     public void add(){ amount++; };

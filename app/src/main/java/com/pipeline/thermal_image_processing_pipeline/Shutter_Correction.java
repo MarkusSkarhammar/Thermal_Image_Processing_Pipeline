@@ -14,7 +14,7 @@ public class Shutter_Correction {
         float temp = 0;
         for(int y = 0; y < image.getHeight(); ++y){
             for(int x = 0; x < image.getWidth(); ++x){
-               temp = ( Math.abs((float)(data[y][x] - shutterValues[y][x])) * (gain[y][x]) + mean);
+               temp = ( ((float)(data[y][x] - shutterValues[y][x])) * (gain[y][x] + 5) + mean);
                 //data[x][y] = (int)(data[x][y] + gain[x][y]) - shutterValues[x][y];
                 data[y][x] = (int)temp;
             }

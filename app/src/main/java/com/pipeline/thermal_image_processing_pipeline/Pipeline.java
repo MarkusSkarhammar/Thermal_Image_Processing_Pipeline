@@ -27,6 +27,8 @@ public class Pipeline {
     public void processImage(PGMImage image){
 
         shutter_correction(image);
+
+        Tone_Mapping(image);
     }
 
     /**
@@ -56,5 +58,16 @@ public class Pipeline {
             }
         }
         image.setMaxValue(maxValue);
+    }
+
+    private void Tone_Mapping(PGMImage image){
+        HistogramEqualization he = new HistogramEqualization(256);
+        for(int y = 0; y < image.getHeight(); ++y){
+            for(int x = 0; x < image.getWidth(); ++x){
+                he.add(image.getDataAt(x, y), image.getMaxValue());
+            }
+        }
+        he.generateHistogramData(image.getHeight()*image.getWidth());
+        he.getHistogramEqualizationColorValues(image);
     }
 }

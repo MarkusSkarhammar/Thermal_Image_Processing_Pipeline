@@ -2,6 +2,7 @@ package com.example.thermal_image_processing_pipeline;
 
 public class PGMImage {
     private int[][] data;
+    private int[][] colorValues;
     private int width, height, maxValue;
     private boolean hasBeenProcessed;
 
@@ -39,6 +40,10 @@ public class PGMImage {
         return data[col][row];
     }
 
+    public int getColorvalueAt(int row, int col){
+        return colorValues[col][row];
+    }
+
     public void setDataAt(int x, int y, int v){
         data[y][x] = v;
     }
@@ -51,4 +56,11 @@ public class PGMImage {
         return data;
     }
 
+    public void setColorValues(int[][] colorValues) {
+        this.colorValues = colorValues;
+    }
+
+    public int[][] getColorValues() {
+        return colorValues;
+    }
 }
