@@ -98,7 +98,7 @@ public class PlotHistogram {
     }
 
     /**
-     * Removes primary and secondary scale.
+     * Clears primary and secondary scale.
      * @param graph
      */
     public static void clear(GraphView graph) {
