@@ -87,7 +87,7 @@ public final class PGMIO {
                 throw new IOException("The image's maximum gray value must be in range [0, " + MAXVAL + "].");
             if (max > 255)
                 amount = 2;
-            final int[][] image = new int[col][row];
+            final int[][] image = new int[row][col];
             for (int j = 0; j < col; ++j) {
                 for (int i = 0; i < row; ++i) {
                     final int p = getData(stream, amount);
@@ -95,7 +95,7 @@ public final class PGMIO {
                         throw new IOException("Reached end-of-file prematurely.");
                     else if (p < 0 || p > MAXVAL)
                         throw new IOException("Pixel value " + p + " outside of range [0, " + max + "].");
-                    image[j][i] = p;
+                    image[i][j] = p;
                 }
             }
             return new PGMImage(image, max);

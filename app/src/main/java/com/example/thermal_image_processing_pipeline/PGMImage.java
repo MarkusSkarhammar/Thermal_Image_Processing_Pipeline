@@ -2,14 +2,13 @@ package com.example.thermal_image_processing_pipeline;
 
 public class PGMImage {
     private int[][] data;
-    private int[][] colorValues;
     private int width, height, maxValue;
     private boolean hasBeenProcessed;
 
     public PGMImage(int[][] data, int maxValue){
         this.data = data;
-        this.width = data[0].length;
-        this.height = data.length;
+        this.width = data.length;
+        this.height = data[0].length;
         this.maxValue = maxValue;
         this.hasBeenProcessed = false;
     }
@@ -23,7 +22,7 @@ public class PGMImage {
     public int[] getRowAt(int col){
         int[] newRow = new int[width];
         for(int i = 0; i < width; i++){
-            newRow[i] = data[col][i];
+            newRow[i] = data[i][col];
         }
         return newRow;
     }
@@ -31,21 +30,17 @@ public class PGMImage {
     public int[] getColAt(int row){
         int[] newCol = new int[height];
         for(int i = 0; i < height; i++){
-            newCol[i] = data[i][height];
+            newCol[i] = data[height][i];
         }
         return newCol;
     }
 
     public int getDataAt(int row, int col){
-        return data[col][row];
-    }
-
-    public int getColorvalueAt(int row, int col){
-        return colorValues[col][row];
+        return data[row][col];
     }
 
     public void setDataAt(int x, int y, int v){
-        data[y][x] = v;
+        data[x][y] = v;
     }
 
     public void setData(int[][] data){
@@ -56,11 +51,4 @@ public class PGMImage {
         return data;
     }
 
-    public void setColorValues(int[][] colorValues) {
-        this.colorValues = colorValues;
-    }
-
-    public int[][] getColorValues() {
-        return colorValues;
-    }
 }

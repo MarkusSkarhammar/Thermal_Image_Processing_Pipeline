@@ -26,12 +26,12 @@ public class DisplayHandler {
     private static Bitmap generateBitmap(PGMImage image, int color){
         Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),  RGB_565);
 
-        if(image.getColorValues() != null)
-            for(int x = 0; x < image.getWidth(); x++){
-                for(int y = 0; y < image.getHeight(); y++){
-                    bitmap.setPixel(x, y, getColor(image.getColorvalueAt(x, y), color, image));
-                }
+
+        for(int x = 0; x < image.getWidth(); x++){
+            for(int y = 0; y < image.getHeight(); y++){
+                bitmap.setPixel(x, y, getColor(image.getDataAt(x, y), color, image));
             }
+        }
         return bitmap;
     }
 
@@ -54,8 +54,10 @@ public class DisplayHandler {
 
     }
 
-    private static int getColor(int colorValue, int color, PGMImage image){
+    private static int getColor(int intensity, int color, PGMImage image){
         Color c = new Color();
+        int colorValue = (int) ( (double) (((double)intensity / image.getMaxValue()) * 255) );
+        colorValue = Math.abs(colorValue);
         if(colorValue == 0){
             return Color.BLACK;
         }else if(colorValue == 255){
@@ -68,7 +70,7 @@ public class DisplayHandler {
             else if(color == GREEN)
                 return c.rgb(0, 255-colorValue, 0);
             else
-                return c.rgb(colorValue, colorValue, colorValue);
+                return c.rgb(255-colorValue, 255-colorValue, 255-colorValue);
         }
     }
 
