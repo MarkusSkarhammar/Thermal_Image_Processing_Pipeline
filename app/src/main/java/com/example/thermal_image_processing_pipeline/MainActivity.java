@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                 if(img !=null)
                     DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.GREEN), imgView);
 
-                img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
+                //img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
                 imgView = findViewById(R.id.imageView4);
                 if(img !=null)
                     DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.BLUE), imgView);
