@@ -7,8 +7,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
-import androidx.recyclerview.widget.SortedList;
-
 
 public class HistogramEqualization {
     private ArrayList<HistogramDataEntry> pixelTable2 = new ArrayList<>();
@@ -35,11 +33,14 @@ public class HistogramEqualization {
     }
 
     private int getHColorValues(int intensity){
-        return pixelTable.get(Math.abs(intensity)).getH();
+        if(pixelTable.get(Math.abs(intensity)) != null)
+            return pixelTable.get(Math.abs(intensity)).getH();
+        else
+            return 0;
     }
 
     public void add(int pixelDensity, int maxValue){
-        pixelDensity = Math.abs(pixelDensity);
+        pixelDensity = (pixelDensity);
         if(this.pixelTable.get(pixelDensity) != null){
             this.pixelTable.get(pixelDensity).add();
         }else
@@ -49,15 +50,15 @@ public class HistogramEqualization {
 
     public void generateHistogramData(int n){
         if(!dataGenerated){
-            int CDFAmount = 0, currentH = 0;
+            float CDFAmount = 0;
             ArrayList<HistogramDataEntry> list = new ArrayList<>(pixelTable.values());
             Collections.sort(list, new sortList());
             for(HistogramDataEntry p : list){
-                CDFAmount += p.getAmount();
+                CDFAmount += (float)p.getAmount();
                 p.setCdf(CDFAmount);
             }
-            int cdfMin = getLowest();
-            for(HistogramDataEntry p : pixelTable.values()){
+            float cdfMin = getLowest(list);
+            for(HistogramDataEntry p : list){
                 p.setH(Math.round(((float)p.getCdf()-cdfMin)/(n-cdfMin)*(L-1)));
             }
             dataGenerated = true;
@@ -65,13 +66,8 @@ public class HistogramEqualization {
     }
 
 
-    private int getLowest(){
-        int lowest = 1000000;
-        for(HistogramDataEntry p : pixelTable.values()){
-            if(p.getCdf() < lowest)
-                lowest = p.getCdf();
-        }
-        return lowest;
+    private float getLowest(ArrayList<HistogramDataEntry> list){
+        return list.get(0).getCdf();
     }
 
     private class sortList implements Comparator<HistogramDataEntry> {

@@ -40,7 +40,7 @@ public class Pipeline {
 
     }
 
-    private void shutter_correction(PGMImage image){
+    public void shutter_correction(PGMImage image){
         shutter.applyShutterAndGain(image, gain);
         checkMaxValue(image);
     }
@@ -60,7 +60,7 @@ public class Pipeline {
         image.setMaxValue(maxValue);
     }
 
-    private void Tone_Mapping(PGMImage image){
+    public void Tone_Mapping(PGMImage image){
         HistogramEqualization he = new HistogramEqualization(256);
         for(int y = 0; y < image.getHeight(); ++y){
             for(int x = 0; x < image.getWidth(); ++x){

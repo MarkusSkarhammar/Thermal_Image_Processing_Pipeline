@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -68,20 +69,23 @@ public class MainActivity extends AppCompatActivity {
                 pipeline.processImage(img);
                 ImageView imgView = findViewById(R.id.imageView1);
                 if(img != null)
-                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
-
-                imgView = findViewById(R.id.imageView2);
-                if(img !=null)
-                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.RED), imgView);
-
-                imgView = findViewById(R.id.imageView3);
-                if(img !=null)
                     DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.GREEN), imgView);
 
-                //img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
+                img = FileManagement.readFile(MainActivity.this, "Hawkes_Bay_original");
+                imgView = findViewById(R.id.imageView2);
+                if(img !=null)
+                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
+
+                pipeline.Tone_Mapping(img);
+                imgView = findViewById(R.id.imageView3);
+                if(img !=null)
+                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
+
+                img = FileManagement.readFile(MainActivity.this, "test_image");
+                pipeline.Tone_Mapping(img);
                 imgView = findViewById(R.id.imageView4);
                 if(img !=null)
-                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.BLUE), imgView);
+                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
             }
         });
     }
