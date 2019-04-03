@@ -64,13 +64,19 @@ public class MainActivity extends AppCompatActivity {
                 shutter = FileManagement.readFile(MainActivity.this, "Shutter_off000000");
                 pipeline = new Pipeline(MainActivity.this, shutter.getWidth(), shutter.getHeight());
                 pipeline.getShutterValues(shutter);
+
                 // Image 1
                 img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
+
                 pipeline.processImage(img);
+
+                OpenCVHandler.equalizeHist(img);
+
                 ImageView imgView = findViewById(R.id.imageView1);
                 if(img != null)
                     DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
 
+                /*
                 img = FileManagement.readFile(MainActivity.this, "Hawkes_Bay_original");
                 imgView = findViewById(R.id.imageView2);
                 if(img !=null)
@@ -86,6 +92,8 @@ public class MainActivity extends AppCompatActivity {
                 imgView = findViewById(R.id.imageView4);
                 if(img !=null)
                     DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
+
+                */
             }
         });
     }
