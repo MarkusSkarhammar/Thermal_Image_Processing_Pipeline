@@ -1,9 +1,13 @@
 package com.pipeline.thermal_image_processing_pipeline;
 
 import android.app.Activity;
+import android.widget.ImageView;
 
 import com.example.thermal_image_processing_pipeline.FileManagement;
+import com.example.thermal_image_processing_pipeline.MainActivity;
+import com.example.thermal_image_processing_pipeline.OpenCVHandler;
 import com.example.thermal_image_processing_pipeline.PGMImage;
+import com.example.thermal_image_processing_pipeline.R;
 
 public class Pipeline {
     private Shutter_Correction shutter;
@@ -22,11 +26,11 @@ public class Pipeline {
      * @param image The image to be processed.
      * @return The processed thermal image.
      */
-    public void processImage(PGMImage image){
+    public void processImage(PGMImage image, Activity a, ImageView imgView){
 
         Shutter_Correction(image);
 
-        Tone_Mapping(image);
+        OpenCVHandler.equalizeHist(image, a, imgView);
     }
 
     /**

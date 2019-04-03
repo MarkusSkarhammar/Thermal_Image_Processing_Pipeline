@@ -24,10 +24,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+
+        System.loadLibrary("opencv_java4");
 
         // Check if we have read permission
-        int permission = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        //for(int i = 0; i < PERMISSIONS_STORAGE.length; i++){
+        int permission = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
         if (permission != PackageManager.PERMISSION_GRANTED) {
             // We don't have permission so prompt the user
@@ -36,7 +38,10 @@ public class MainActivity extends AppCompatActivity {
                     PERMISSIONS_STORAGE,
                     REQUEST_EXTERNAL_STORAGE
             );
+            //}
         }
+
+        setContentView(R.layout.activity_main);
 
         final Button button = findViewById(R.id.button_1);
         button.setOnClickListener(new View.OnClickListener() {
@@ -68,13 +73,10 @@ public class MainActivity extends AppCompatActivity {
                 // Image 1
                 img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
 
-                pipeline.processImage(img);
-
-                OpenCVHandler.equalizeHist(img);
-
                 ImageView imgView = findViewById(R.id.imageView1);
-                if(img != null)
-                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
+                pipeline.processImage(img, MainActivity.this, imgView);
+
+
 
                 /*
                 img = FileManagement.readFile(MainActivity.this, "Hawkes_Bay_original");
@@ -100,10 +102,10 @@ public class MainActivity extends AppCompatActivity {
 
 
     // Storage Permissions
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static final int REQUEST_EXTERNAL_STORAGE = 0;
     private static String[] PERMISSIONS_STORAGE = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
     };
 
 

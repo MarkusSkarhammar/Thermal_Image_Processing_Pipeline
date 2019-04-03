@@ -34,7 +34,7 @@ import static android.graphics.Bitmap.Config.RGB_565;
 
 public class FileManagement {
 
-    public static void writeFile(Activity a, String name, PGMImage image){
+    public static void writeFile(Activity a, String name){
 
         int permission = ActivityCompat.checkSelfPermission(a, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
