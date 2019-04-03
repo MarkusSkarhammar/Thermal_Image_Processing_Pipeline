@@ -37,12 +37,14 @@ public class OpenCVHandler {
         System.out.println("" + path);
         Imgcodecs.imwrite(Environment.getExternalStorageDirectory().getPath()+"/Download/" + "before.jpg", src);
 
+        Photo.fastNlMeansDenoising(src, src);
+
         //Imgproc.equalizeHist(src, src);
         Imgproc.createCLAHE(3).apply(src, src);
 
             //there could be some processing
         Imgproc.cvtColor(src, src, Imgproc.COLOR_GRAY2RGB, 4);
-        Photo.fastNlMeansDenoising(src, src);
+        
         Utils.matToBitmap(src, b);
 
         DisplayHandler.DrawCanvas(b, view);
