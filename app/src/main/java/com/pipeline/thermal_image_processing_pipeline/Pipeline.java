@@ -5,8 +5,6 @@ import android.app.Activity;
 import com.example.thermal_image_processing_pipeline.FileManagement;
 import com.example.thermal_image_processing_pipeline.PGMImage;
 
-import java.io.FileInputStream;
-
 public class Pipeline {
     private Shutter_Correction shutter;
     private float[][] gain;
@@ -26,7 +24,7 @@ public class Pipeline {
      */
     public void processImage(PGMImage image){
 
-        shutter_correction(image);
+        Shutter_Correction(image);
 
         Tone_Mapping(image);
     }
@@ -40,7 +38,7 @@ public class Pipeline {
 
     }
 
-    public void shutter_correction(PGMImage image){
+    public void Shutter_Correction(PGMImage image){
         shutter.applyShutterAndGain(image, gain);
         checkMaxValue(image);
     }
@@ -61,13 +59,21 @@ public class Pipeline {
     }
 
     public void Tone_Mapping(PGMImage image){
-        HistogramEqualization he = new HistogramEqualization(256);
-        for(int y = 0; y < image.getHeight(); ++y){
-            for(int x = 0; x < image.getWidth(); ++x){
-                he.add(image.getDataAt(x, y), image.getMaxValue());
+        int sections = 8, width = image.getWidth()/sections, height = image.getHeight()/sections;
+        for(int ySection = 0; ySection < sections; ySection++){
+            for(int xSection = 0; xSection < sections; xSection++){
+                HistogramEqualization he = new HistogramEqualization(256, xSection * width, ySection * height, width, height);
+                for(int y = ySection * height; y < ySection * height + height; ++y){
+                    for(int x = xSection * width; x < xSection * width + width; ++x){
+                        he.add(image.getDataAt(x, y), image.getMaxValue());
+                    }
+                }
+                //he.generateHistogramData(image.getHeight()*image.getWidth());
+                he.generateHistogramData(width*height);
+                //he.getHistogramEqualizationColorValues(image);
             }
         }
-        he.generateHistogramData(image.getHeight()*image.getWidth());
-        he.getHistogramEqualizationColorValues(image);
+
+        //image.setHasBeenProcessed(true);
     }
 }

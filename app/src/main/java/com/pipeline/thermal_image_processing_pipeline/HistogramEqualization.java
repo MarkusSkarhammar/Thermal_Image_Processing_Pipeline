@@ -9,27 +9,29 @@ import java.util.HashMap;
 
 
 public class HistogramEqualization {
-    private ArrayList<HistogramDataEntry> pixelTable2 = new ArrayList<>();
     private HashMap<Integer, HistogramDataEntry> pixelTable = new HashMap<>();
     private boolean dataGenerated = false;
-    private int L;
+    private int L, xStart, yStart, xLength, yLength;
 
     /**
      *
      * @param L the number of colors available
      */
-    public HistogramEqualization(int L){
+    public HistogramEqualization(int L, int xStart, int yStart, int xLength, int yLength){
         this.L = L;
+        this.xStart = xStart;
+        this.yStart = yStart;
+        this.xLength = xLength;
+        this.yLength = yLength;
     }
 
     public void getHistogramEqualizationColorValues(PGMImage image){
-        int[][] colorValues = new int[image.getHeight()][image.getWidth()];
-        for(int y = 0; y < image.getHeight(); ++y){
-            for(int x = 0; x < image.getWidth(); ++x){
+        int[][] colorValues = image.getColorValues();
+        for(int y = yStart; y < yStart + yLength; ++y){
+            for(int x = xStart; x < xStart + xLength; ++x){
                 colorValues[y][x] = getHColorValues(image.getDataAt(x, y));
             }
         }
-        image.setColorValues(colorValues);
     }
 
     private int getHColorValues(int intensity){
@@ -40,7 +42,6 @@ public class HistogramEqualization {
     }
 
     public void add(int pixelDensity, int maxValue){
-        pixelDensity = (pixelDensity);
         if(this.pixelTable.get(pixelDensity) != null){
             this.pixelTable.get(pixelDensity).add();
         }else

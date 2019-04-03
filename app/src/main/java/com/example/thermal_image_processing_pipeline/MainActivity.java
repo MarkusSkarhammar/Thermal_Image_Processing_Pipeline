@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 pipeline.processImage(img);
                 ImageView imgView = findViewById(R.id.imageView1);
                 if(img != null)
-                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img, DisplayHandler.GREEN), imgView);
+                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
 
                 img = FileManagement.readFile(MainActivity.this, "Hawkes_Bay_original");
                 imgView = findViewById(R.id.imageView2);
