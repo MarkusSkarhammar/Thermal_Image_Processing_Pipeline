@@ -32,6 +32,8 @@ public class Pipeline {
         Shutter_Correction(image);
 
         OpenCVHandler.equalizeHist(image);
+
+        OpenCVHandler.PixelCorrection(image.getProcessedBitmap());
     }
 
     /**

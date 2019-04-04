@@ -40,4 +40,12 @@ public class OpenCVHandler {
         src.convertTo(src,-1, contrast, brightness);
         Utils.matToBitmap(src, b);
     }
+
+    public static void PixelCorrection(Bitmap b){
+        Mat src = new Mat(b.getWidth(), b.getHeight(), CV_8UC1);
+        Utils.bitmapToMat(b, src);
+        Imgproc.medianBlur(src, src, 3);
+        Utils.matToBitmap(src, b);
+
+    }
 }
