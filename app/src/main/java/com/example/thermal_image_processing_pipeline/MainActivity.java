@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ScrollView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        final Button button = findViewById(R.id.button_1);
+        /*final Button button = findViewById(R.id.button_1);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 TextView txt = findViewById(R.id.textView);
@@ -63,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final Button button2 = findViewById(R.id.button_2);
+        /*final Button button2 = findViewById(R.id.button_2);
         button2.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 shutter = FileManagement.readFile(MainActivity.this, "Shutter_off000000");
@@ -73,10 +74,11 @@ public class MainActivity extends AppCompatActivity {
                 // Image 1
                 img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
 
+                pipeline.processImage(img);
+                pipeline.brightness(img, 90);
+
                 ImageView imgView = findViewById(R.id.imageView1);
-                pipeline.processImage(img, MainActivity.this, imgView);
-
-
+                img.draw(imgView);
 
                 /*
                 img = FileManagement.readFile(MainActivity.this, "Hawkes_Bay_original");
@@ -95,9 +97,36 @@ public class MainActivity extends AppCompatActivity {
                 if(img !=null)
                     DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
 
-                */
+
             }
-        });
+        });*/
+
+        init();
+    }
+
+    private void init(){
+        shutter = FileManagement.readFile(MainActivity.this, "Shutter_off000000");
+        pipeline = new Pipeline(MainActivity.this, shutter.getWidth(), shutter.getHeight());
+        pipeline.getShutterValues(shutter);
+
+        // Image 1
+        img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
+
+        pipeline.processImage(img);
+
+        ImageView imgView = findViewById(R.id.imageView1);
+        img.draw(imgView);
+
+        // Setup SeekBars for brightness, contrast and sharpening
+
+        final SeekBar brightness=(SeekBar) findViewById(R.id.seekBar1);
+        final SeekBar contrast=(SeekBar) findViewById(R.id.seekBar2);
+        final SeekBar sharpening=(SeekBar) findViewById(R.id.seekBar3);
+
+        SeekBarListener seekBarListener = new SeekBarListener(img, imgView);
+        brightness.setOnSeekBarChangeListener(seekBarListener);
+        contrast.setOnSeekBarChangeListener(seekBarListener);
+        sharpening.setOnSeekBarChangeListener(seekBarListener);
     }
 
 

@@ -29,9 +29,6 @@ public class DisplayHandler {
 
             for(int x = 0; x < image.getWidth(); x++){
                 for(int y = 0; y < image.getHeight(); y++){
-                    if(image.isHasBeenProcessed())
-                        bitmap.setPixel(x, y, getColor(image.getColorvalueAt(x, y), color, image));
-                    else
                         bitmap.setPixel(x, y, getColor(image.getDataAt(x, y), color, image, true));
                 }
             }

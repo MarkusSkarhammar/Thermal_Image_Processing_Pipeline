@@ -1,6 +1,7 @@
 package com.pipeline.thermal_image_processing_pipeline;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.widget.ImageView;
 
 import com.example.thermal_image_processing_pipeline.FileManagement;
@@ -26,11 +27,11 @@ public class Pipeline {
      * @param image The image to be processed.
      * @return The processed thermal image.
      */
-    public void processImage(PGMImage image, Activity a, ImageView imgView){
+    public void processImage(PGMImage image){
 
         Shutter_Correction(image);
 
-        OpenCVHandler.equalizeHist(image, a, imgView);
+        OpenCVHandler.equalizeHist(image);
     }
 
     /**
@@ -40,6 +41,10 @@ public class Pipeline {
      */
     public void applyFilters(PGMImage image){
 
+    }
+
+    public void ContrastAndBrightness(Bitmap b, double contrast, int brightness){
+        OpenCVHandler.ContrastAndBrightness(b, contrast, brightness);
     }
 
     public void Shutter_Correction(PGMImage image){
