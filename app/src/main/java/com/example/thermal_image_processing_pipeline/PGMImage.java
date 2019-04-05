@@ -6,7 +6,7 @@ import android.widget.ImageView;
 public class PGMImage {
     private int[][] data;
     private int[][] colorValues;
-    private int width, height, maxValue, brightness;
+    private int width, height, maxValue, brightness, sharpening;
     private double contrast = 1.0;
     private Bitmap bitmap = null, processedBitmap = null;
 
@@ -106,5 +106,13 @@ public class PGMImage {
 
     public void setContrast(double contrast) {
         this.contrast = contrast;
+    }
+
+    public int getSharpening() {
+        return sharpening;
+    }
+
+    public void setSharpening(int sharpening) {
+        this.sharpening = sharpening;
     }
 }
