@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ScrollView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
@@ -24,10 +25,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+
+        System.loadLibrary("opencv_java4");
 
         // Check if we have read permission
-        int permission = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        //for(int i = 0; i < PERMISSIONS_STORAGE.length; i++){
+        int permission = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
         if (permission != PackageManager.PERMISSION_GRANTED) {
             // We don't have permission so prompt the user
@@ -36,9 +39,12 @@ public class MainActivity extends AppCompatActivity {
                     PERMISSIONS_STORAGE,
                     REQUEST_EXTERNAL_STORAGE
             );
+            //}
         }
 
-        final Button button = findViewById(R.id.button_1);
+        setContentView(R.layout.activity_main);
+
+        /*final Button button = findViewById(R.id.button_1);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 TextView txt = findViewById(R.id.textView);
@@ -58,19 +64,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final Button button2 = findViewById(R.id.button_2);
+        /*final Button button2 = findViewById(R.id.button_2);
         button2.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 shutter = FileManagement.readFile(MainActivity.this, "Shutter_off000000");
                 pipeline = new Pipeline(MainActivity.this, shutter.getWidth(), shutter.getHeight());
                 pipeline.getShutterValues(shutter);
+
                 // Image 1
                 img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
-                pipeline.processImage(img);
-                ImageView imgView = findViewById(R.id.imageView1);
-                if(img != null)
-                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
 
+                pipeline.processImage(img);
+                pipeline.brightness(img, 90);
+
+                ImageView imgView = findViewById(R.id.imageView1);
+                img.draw(imgView);
+
+                /*
                 img = FileManagement.readFile(MainActivity.this, "Hawkes_Bay_original");
                 imgView = findViewById(R.id.imageView2);
                 if(img !=null)
@@ -86,16 +96,45 @@ public class MainActivity extends AppCompatActivity {
                 imgView = findViewById(R.id.imageView4);
                 if(img !=null)
                     DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
+
+
             }
-        });
+        });*/
+
+        init();
+    }
+
+    private void init(){
+        shutter = FileManagement.readFile(MainActivity.this, "Shutter_off000000");
+        pipeline = new Pipeline(MainActivity.this, shutter.getWidth(), shutter.getHeight());
+        pipeline.getShutterValues(shutter);
+
+        // Image 1
+        img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
+
+        pipeline.processImage(img);
+
+        ImageView imgView = findViewById(R.id.imageView1);
+        img.draw(imgView);
+
+        // Setup SeekBars for brightness, contrast and sharpening
+
+        final SeekBar brightness=(SeekBar) findViewById(R.id.seekBar1);
+        final SeekBar contrast=(SeekBar) findViewById(R.id.seekBar2);
+        final SeekBar sharpening=(SeekBar) findViewById(R.id.seekBar3);
+
+        SeekBarListener seekBarListener = new SeekBarListener(img, imgView);
+        brightness.setOnSeekBarChangeListener(seekBarListener);
+        contrast.setOnSeekBarChangeListener(seekBarListener);
+        sharpening.setOnSeekBarChangeListener(seekBarListener);
     }
 
 
     // Storage Permissions
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static final int REQUEST_EXTERNAL_STORAGE = 0;
     private static String[] PERMISSIONS_STORAGE = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
     };
 
 

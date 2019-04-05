@@ -7,9 +7,7 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.widget.ImageView;
 
-import java.util.ArrayList;
-
-import static android.graphics.Bitmap.Config.ARGB_4444;
+import static android.graphics.Bitmap.Config.ARGB_8888;
 
 public class DisplayHandler {
     public static int GRAY = 0, RED = -1, BLUE = -2, GREEN = -3;
@@ -24,14 +22,11 @@ public class DisplayHandler {
     }
 
     private static Bitmap generateBitmap(PGMImage image, int color){
-        Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),  ARGB_4444);
+        Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),  ARGB_8888);
 
 
             for(int x = 0; x < image.getWidth(); x++){
                 for(int y = 0; y < image.getHeight(); y++){
-                    if(image.isHasBeenProcessed())
-                        bitmap.setPixel(x, y, getColor(image.getColorvalueAt(x, y), color, image));
-                    else
                         bitmap.setPixel(x, y, getColor(image.getDataAt(x, y), color, image, true));
                 }
             }

@@ -1,10 +1,14 @@
 package com.example.thermal_image_processing_pipeline;
 
+import android.graphics.Bitmap;
+import android.widget.ImageView;
+
 public class PGMImage {
     private int[][] data;
     private int[][] colorValues;
-    private int width, height, maxValue;
-    private boolean hasBeenProcessed;
+    private int width, height, maxValue, brightness, sharpening;
+    private double contrast = 1.0;
+    private Bitmap bitmap = null, processedBitmap = null;
 
     public PGMImage(int[][] data, int maxValue){
         this.data = data;
@@ -12,7 +16,6 @@ public class PGMImage {
         this.height = data.length;
         this.maxValue = maxValue;
         this.colorValues = new int[height][width];
-        this.hasBeenProcessed = false;
     }
 
     public int getWidth() { return width; };
@@ -61,17 +64,55 @@ public class PGMImage {
         this.colorValues = colorValues;
     }
 
-    public boolean isHasBeenProcessed() {
-        return hasBeenProcessed;
-    }
-
-    public void setHasBeenProcessed(boolean hasBeenProcessed) {
-        this.hasBeenProcessed = hasBeenProcessed;
-    }
-
     public int[][] getColorValues() {
         return colorValues;
+    }
+
+    public Bitmap getProcessedBitmap() {
+        return processedBitmap;
+    }
+
+    public void setProcessedBitmap(Bitmap processedBitmap) {
+        this.processedBitmap = processedBitmap;
+    }
 
 
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    public void setBitmap(Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
+
+    public void draw(ImageView view){
+        if(bitmap != null)
+            DisplayHandler.DrawCanvas(bitmap, view);
+        else
+            DisplayHandler.DrawCanvas(processedBitmap, view);
+    }
+
+    public int getBrightness() {
+        return brightness;
+    }
+
+    public void setBrightness(int brightness) {
+        this.brightness = brightness;
+    }
+
+    public double getContrast() {
+        return contrast;
+    }
+
+    public void setContrast(double contrast) {
+        this.contrast = contrast;
+    }
+
+    public int getSharpening() {
+        return sharpening;
+    }
+
+    public void setSharpening(int sharpening) {
+        this.sharpening = sharpening;
     }
 }
