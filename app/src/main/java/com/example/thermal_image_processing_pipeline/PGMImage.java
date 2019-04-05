@@ -11,6 +11,7 @@ public class PGMImage {
         this.width = data[0].length;
         this.height = data.length;
         this.maxValue = maxValue;
+        this.colorValues = new int[height][width];
         this.hasBeenProcessed = false;
     }
 
@@ -60,7 +61,17 @@ public class PGMImage {
         this.colorValues = colorValues;
     }
 
+    public boolean isHasBeenProcessed() {
+        return hasBeenProcessed;
+    }
+
+    public void setHasBeenProcessed(boolean hasBeenProcessed) {
+        this.hasBeenProcessed = hasBeenProcessed;
+    }
+
     public int[][] getColorValues() {
         return colorValues;
+
+
     }
 }

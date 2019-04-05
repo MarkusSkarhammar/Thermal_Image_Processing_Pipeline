@@ -9,7 +9,7 @@ import android.widget.ImageView;
 
 import java.util.ArrayList;
 
-import static android.graphics.Bitmap.Config.RGB_565;
+import static android.graphics.Bitmap.Config.ARGB_4444;
 
 public class DisplayHandler {
     public static int GRAY = 0, RED = -1, BLUE = -2, GREEN = -3;
@@ -24,12 +24,15 @@ public class DisplayHandler {
     }
 
     private static Bitmap generateBitmap(PGMImage image, int color){
-        Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),  RGB_565);
+        Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),  ARGB_4444);
 
-        if(image.getColorValues() != null)
+
             for(int x = 0; x < image.getWidth(); x++){
                 for(int y = 0; y < image.getHeight(); y++){
-                    bitmap.setPixel(x, y, getColor(image.getColorvalueAt(x, y), color, image));
+                    if(image.isHasBeenProcessed())
+                        bitmap.setPixel(x, y, getColor(image.getColorvalueAt(x, y), color, image));
+                    else
+                        bitmap.setPixel(x, y, getColor(image.getDataAt(x, y), color, image, true));
                 }
             }
         return bitmap;
@@ -54,19 +57,47 @@ public class DisplayHandler {
 
     }
 
+
+
     private static int getColor(int colorValue, int color, PGMImage image){
         Color c = new Color();
+        if(colorValue == 255){
+            if(color == RED)
+                return Color.RED;
+            else if(color == BLUE)
+                return Color.BLUE;
+            else if(color == GREEN)
+                return Color.GREEN;
+            else
+                return Color.WHITE;
+        }else if(colorValue == 0){
+            return Color.BLACK;
+        }else{
+            if(color == RED)
+                return c.rgb(colorValue, 0, 0);
+            else if(color == BLUE)
+                return c.rgb(0, 0, colorValue);
+            else if(color == GREEN)
+                return c.rgb(0, colorValue, 0);
+            else
+                return c.rgb(colorValue, colorValue, colorValue);
+        }
+    }
+
+    private static int getColor(int pixelDensity, int color, PGMImage image, boolean andra){
+        Color c = new Color();
+        int colorValue = (int)(((double)pixelDensity / (double)image.getMaxValue()) * 256);
         if(colorValue == 0){
             return Color.BLACK;
         }else if(colorValue == 255){
             return Color.WHITE;
         }else{
             if(color == RED)
-                return c.rgb(255-colorValue, 0, 0);
+                return c.rgb(colorValue, 0, 0);
             else if(color == BLUE)
-                return c.rgb(0, 0, 255-colorValue);
+                return c.rgb(0, 0, colorValue);
             else if(color == GREEN)
-                return c.rgb(0, 255-colorValue, 0);
+                return c.rgb(0, colorValue, 0);
             else
                 return c.rgb(colorValue, colorValue, colorValue);
         }

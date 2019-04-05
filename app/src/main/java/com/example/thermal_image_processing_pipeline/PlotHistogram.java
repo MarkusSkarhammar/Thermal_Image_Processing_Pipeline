@@ -14,11 +14,11 @@ public class PlotHistogram {
     In order to use, see the following example code:
 
         GraphView graph = (GraphView) findViewById(R.id.graph1);
-        PlotHistogram.plot(img, graph);
+        PlotHistogram.plot(img.getData(), graph);
 
     */
 
-    private static int[] createHistogram(PGMImage img) {
+    private static int[] createHistogram(int[][] imgData) {
       	/*
 
     	Number of pixels. Axis height calculated by counting highest number of pixels in a tone?
@@ -30,12 +30,12 @@ public class PlotHistogram {
     	*/
 
         // Create an array.
-        int[] tones = new int[img.getMaxValue() + 1]; // Each tone contains a number of pixels.
+        int[] tones = new int[imgData.length * imgData[0].length]; // Each tone contains a number of pixels.
 
         // Create a histogram by scanning every pixel of the image and incrementing the relevant member in the array.
-        for (int y = 0; y < img.getHeight(); ++y) {
-            for (int x = 0; x < img.getWidth(); ++x) {
-                ++tones[img.getDataAt(x, y)];
+        for (int y = 0; y < imgData.length; ++y) {
+            for (int x = 0; x < imgData[0].length; ++x) {
+                ++tones[imgData[y][x]];
             }
         }
 
@@ -44,12 +44,12 @@ public class PlotHistogram {
 
     /**
      * Plot primary scale axis.
-     * @param img
+     * @param imgData
      * @param graph
      */
-    public static void plot(PGMImage img, GraphView graph) {
+    public static void plot(int[][] imgData, GraphView graph) {
 
-        int[] tones = createHistogram(img);
+        int[] tones = createHistogram(imgData);
         ArrayList<DataPoint> temp = new ArrayList<DataPoint>();
 
         // Find non-zero tones and add new DataPoint.
@@ -66,12 +66,12 @@ public class PlotHistogram {
 
     /**
      * Plot secondary scale axis.
-     * @param img
+     * @param imgData
      * @param graph
      */
-    public static void plotSecondary(PGMImage img, GraphView graph) {
+    public static void plotSecondary(int[][] imgData, GraphView graph) {
 
-        int[] tones = createHistogram(img);
+        int[] tones = createHistogram(imgData);
         ArrayList<DataPoint> dp = new ArrayList<DataPoint>();
 
         // Find non-zero tones and add new DataPoint.

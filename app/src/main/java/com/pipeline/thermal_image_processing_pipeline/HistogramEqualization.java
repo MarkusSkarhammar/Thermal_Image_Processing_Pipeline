@@ -7,39 +7,41 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
-import androidx.recyclerview.widget.SortedList;
-
 
 public class HistogramEqualization {
-    private ArrayList<HistogramDataEntry> pixelTable2 = new ArrayList<>();
     private HashMap<Integer, HistogramDataEntry> pixelTable = new HashMap<>();
     private boolean dataGenerated = false;
-    private int L;
+    private int L, xStart, yStart, xLength, yLength;
 
     /**
      *
      * @param L the number of colors available
      */
-    public HistogramEqualization(int L){
+    public HistogramEqualization(int L, int xStart, int yStart, int xLength, int yLength){
         this.L = L;
+        this.xStart = xStart;
+        this.yStart = yStart;
+        this.xLength = xLength;
+        this.yLength = yLength;
     }
 
     public void getHistogramEqualizationColorValues(PGMImage image){
-        int[][] colorValues = new int[image.getHeight()][image.getWidth()];
-        for(int y = 0; y < image.getHeight(); ++y){
-            for(int x = 0; x < image.getWidth(); ++x){
+        int[][] colorValues = image.getColorValues();
+        for(int y = yStart; y < yStart + yLength; ++y){
+            for(int x = xStart; x < xStart + xLength; ++x){
                 colorValues[y][x] = getHColorValues(image.getDataAt(x, y));
             }
         }
-        image.setColorValues(colorValues);
     }
 
     private int getHColorValues(int intensity){
-        return pixelTable.get(Math.abs(intensity)).getH();
+        if(pixelTable.get(Math.abs(intensity)) != null)
+            return pixelTable.get(Math.abs(intensity)).getH();
+        else
+            return 0;
     }
 
     public void add(int pixelDensity, int maxValue){
-        pixelDensity = Math.abs(pixelDensity);
         if(this.pixelTable.get(pixelDensity) != null){
             this.pixelTable.get(pixelDensity).add();
         }else
@@ -49,15 +51,15 @@ public class HistogramEqualization {
 
     public void generateHistogramData(int n){
         if(!dataGenerated){
-            int CDFAmount = 0, currentH = 0;
+            float CDFAmount = 0;
             ArrayList<HistogramDataEntry> list = new ArrayList<>(pixelTable.values());
             Collections.sort(list, new sortList());
             for(HistogramDataEntry p : list){
-                CDFAmount += p.getAmount();
+                CDFAmount += (float)p.getAmount();
                 p.setCdf(CDFAmount);
             }
-            int cdfMin = getLowest();
-            for(HistogramDataEntry p : pixelTable.values()){
+            float cdfMin = getLowest(list);
+            for(HistogramDataEntry p : list){
                 p.setH(Math.round(((float)p.getCdf()-cdfMin)/(n-cdfMin)*(L-1)));
             }
             dataGenerated = true;
@@ -65,13 +67,8 @@ public class HistogramEqualization {
     }
 
 
-    private int getLowest(){
-        int lowest = 1000000;
-        for(HistogramDataEntry p : pixelTable.values()){
-            if(p.getCdf() < lowest)
-                lowest = p.getCdf();
-        }
-        return lowest;
+    private float getLowest(ArrayList<HistogramDataEntry> list){
+        return list.get(0).getCdf();
     }
 
     private class sortList implements Comparator<HistogramDataEntry> {

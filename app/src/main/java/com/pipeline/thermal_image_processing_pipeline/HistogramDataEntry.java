@@ -1,14 +1,15 @@
 package com.pipeline.thermal_image_processing_pipeline;
 
 public class HistogramDataEntry {
-    int pixelDensity, amount, colorValuePreH, cdf, h;
+    int pixelDensity, amount, colorValuePreH, h;
+    float cdf;
 
     public HistogramDataEntry(int pixelDensity, int amount, int maxValue){
         this.pixelDensity = pixelDensity;
         this.cdf = 0;
         this.h = 0;
         this.amount = amount;
-        this.colorValuePreH = (int)(((double)(pixelDensity) / maxValue) * 255);
+        this.colorValuePreH = (int)(((double)(pixelDensity) / maxValue) * 256);
     }
 
     public int getColorValuePreH() {
@@ -19,7 +20,7 @@ public class HistogramDataEntry {
         return pixelDensity;
     }
 
-    public int getCdf() {
+    public float getCdf() {
         return cdf;
     }
 
@@ -27,7 +28,7 @@ public class HistogramDataEntry {
         return h;
     }
 
-    public void setCdf(int cdf) {
+    public void setCdf(float cdf) {
         this.cdf = cdf;
     }
 

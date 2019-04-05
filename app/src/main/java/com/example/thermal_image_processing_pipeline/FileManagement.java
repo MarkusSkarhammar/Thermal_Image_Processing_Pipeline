@@ -15,6 +15,7 @@ import android.widget.ImageView;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -56,10 +57,8 @@ public class FileManagement {
             if (file.exists()) {
                 int largest = 0, c, b1, b2;
                 try {
-                    byte[] data = Files.readAllBytes(Paths.get(file.getPath()));
-
+                    //byte[] data = Files.readAllBytes(Paths.get(file.getPath()));
                     final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
-
 
                     for(int y = 0; y < height; ++y){
                         for(int x = 0; x < width; ++x){
@@ -67,12 +66,11 @@ public class FileManagement {
                             if(readValue1 != -1){
                                 final int readValue2 = stream.read();
                                 if(readValue2 != -1){
-                                    b1 = readValue1; b2 = readValue2;
+                                    b2 = readValue1; b1 = readValue2;
                                     c = b1 << 8;
                                     c = (c | b2);
                                     if(c > largest)
                                         largest = c;
-                                    //gain[x][y] = c/(float)largest;
                                     gain[y][x] = c;
                                 }else
                                     break;
@@ -80,7 +78,6 @@ public class FileManagement {
                                 break;
                         }
                     }
-
                     for(int y = 0; y < height; ++y){
                         for(int x = 0; x < width; ++x){
                             gain[y][x] /= largest;
@@ -101,21 +98,8 @@ public class FileManagement {
         return gain;
     }
 
-    public static Bitmap toGrayscale(Bitmap bmpOriginal)
-    {
-        int width, height;
-        height = bmpOriginal.getHeight();
-        width = bmpOriginal.getWidth();
-
-        Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(bmpGrayscale);
-        Paint paint = new Paint();
-        ColorMatrix cm = new ColorMatrix();
-        cm.setSaturation(0);
-        ColorMatrixColorFilter f = new ColorMatrixColorFilter(cm);
-        paint.setColorFilter(f);
-        c.drawBitmap(bmpOriginal, 0, 0, paint);
-        return bmpGrayscale;
+    private static FloatBuffer fromByteArray(byte[] bytes) {
+        return ByteBuffer.wrap(bytes).asFloatBuffer();
     }
 
     public static PGMImage readFile(Activity a, String filename) {

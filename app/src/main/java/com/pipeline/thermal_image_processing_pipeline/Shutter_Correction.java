@@ -11,12 +11,11 @@ public class Shutter_Correction {
 
     public void applyShutterAndGain(PGMImage image, final float[][] gain){
         int[][] data = image.getData();
-        float temp = 0;
+        float temp;
         for(int y = 0; y < image.getHeight(); ++y){
             for(int x = 0; x < image.getWidth(); ++x){
-               temp = ( ((float)(data[y][x] - shutterValues[y][x])) * (gain[y][x] + 5) + mean);
-                //data[x][y] = (int)(data[x][y] + gain[x][y]) - shutterValues[x][y];
-                data[y][x] = (int)temp;
+               temp = ( (data[y][x] - shutterValues[y][x]) * ( 1 + gain[y][x]) + mean);
+               data[y][x] = (int)((temp));
             }
         }
     }
