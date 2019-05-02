@@ -13,17 +13,28 @@ import com.example.thermal_image_processing_pipeline.R;
 public class Pipeline {
     private Shutter_Correction shutter;
     private float[][] gain;
+
+    /**
+     *
+     * @param a activity
+     * @param width of the image
+     * @param height of the image
+     */
     public Pipeline(Activity a, int width, int height){
         shutter = new Shutter_Correction();
         getGain(a, width, height);
     }
 
+    /**
+     * Extract shutter image data.
+     * @param shutterImage Shutter image.
+     */
     public void getShutterValues(PGMImage shutterImage){
         shutter.getShutterValues(shutterImage);
     }
 
     /**
-     *
+     * A raw thermal images goes through the whole pipeline.
      * @param image The image to be processed.
      * @return The processed thermal image.
      */
@@ -45,19 +56,39 @@ public class Pipeline {
 
     }
 
+    /**
+     * An image's brightness and contrast is altered.
+     * @param b Bitmap to be altered.
+     * @param contrast The contrast value.
+     * @param brightness The brightness value.
+     */
     public void ContrastAndBrightness(Bitmap b, double contrast, int brightness){
         OpenCVHandler.ContrastAndBrightness(b, contrast, brightness);
     }
 
+    /**
+     * Applying shutter correction to an image.
+     * @param image The image to be altered.
+     */
     public void Shutter_Correction(PGMImage image){
         shutter.applyShutterAndGain(image, gain);
         checkMaxValue(image);
     }
 
+    /**
+     * Get the gain data from a file.
+     * @param a The activity.
+     * @param width of the image.
+     * @param height of the image.
+     */
     private void getGain(Activity a, int width, int height){
         gain = FileManagement.getGain(a, "supplied", width, height);
     }
 
+    /**
+     * Get the max value from an image.
+     * @param image The image who's max color value is to be checked.
+     */
     private void checkMaxValue(PGMImage image){
         int maxValue = 0, data = 0;
         for(int y = 0; y < image.getHeight(); ++y){
