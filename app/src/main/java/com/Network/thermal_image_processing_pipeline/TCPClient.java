@@ -56,7 +56,7 @@ public class TCPClient {
 
                 if(s.isConnected()){
                     byte[] message = new byte[1];
-                    message[0] = 23;
+                    message[0] = 1;
                     Log.d("TCP Client", "Sending: " + message);
                     bufferOut.writeInt(message.length);
                     bufferOut.write(message);
