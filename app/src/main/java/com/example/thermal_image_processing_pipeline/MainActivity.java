@@ -6,21 +6,20 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
-import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import android.util.Log;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.SeekBar;
-import android.widget.TextView;
 
+import com.Network.thermal_image_processing_pipeline.TCPClient;
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
 
 public class MainActivity extends AppCompatActivity {
-    PGMImage img = null, img2 = null, shutter = null;
-    Canvas canvas= null;
-    Pipeline pipeline = null;
+    private PGMImage img = null, img2 = null, shutter = null;
+    private Canvas canvas= null;
+    private Pipeline pipeline = null;
+    private TCPClient tcpClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,65 +42,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_main);
-
-        /*final Button button = findViewById(R.id.button_1);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                TextView txt = findViewById(R.id.textView);
-                //img = FileManagement.readFile(MainActivity.this, "Raw_raw000000");
-                img = FileManagement.readFile(MainActivity.this, "shutter.raw_off000000");
-                if(img != null){
-                    txt.setText("First: " + img.getWidth() + ", second: " + img.getHeight());
-                    TextView txt2 = findViewById(R.id.textView2);
-                    String output = "";
-                    for(int row = 0; row < img.getWidth() / 100; row++){
-                        for(int col = 0; col < img.getHeight() / 100; col++){
-                            output += " [" + img.getDataAt(row, col) + "],";
-                        }
-                    }
-                    txt2.setText(output);
-                }
-            }
-        });
-
-        /*final Button button2 = findViewById(R.id.button_2);
-        button2.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                shutter = FileManagement.readFile(MainActivity.this, "Shutter_off000000");
-                pipeline = new Pipeline(MainActivity.this, shutter.getWidth(), shutter.getHeight());
-                pipeline.getShutterValues(shutter);
-
-                // Image 1
-                img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
-
-                pipeline.processImage(img);
-                pipeline.brightness(img, 90);
-
-                ImageView imgView = findViewById(R.id.imageView1);
-                img.draw(imgView);
-
-                /*
-                img = FileManagement.readFile(MainActivity.this, "Hawkes_Bay_original");
-                imgView = findViewById(R.id.imageView2);
-                if(img !=null)
-                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
-
-                pipeline.Tone_Mapping(img);
-                imgView = findViewById(R.id.imageView3);
-                if(img !=null)
-                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
-
-                img = FileManagement.readFile(MainActivity.this, "test_image");
-                pipeline.Tone_Mapping(img);
-                imgView = findViewById(R.id.imageView4);
-                if(img !=null)
-                    DisplayHandler.DrawCanvas(DisplayHandler.generateBitmapFromPGM(img), imgView);
-
-
-            }
-        });*/
-
         init();
+
+        new ConnectTask().execute("");
     }
 
     private void init(){
@@ -136,6 +79,40 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
+
+    public class ConnectTask extends AsyncTask<String, String, TCPClient> {
+
+        @Override
+        protected TCPClient doInBackground(String... message) {
+
+            //we create a TCPClient object
+            tcpClient = new TCPClient(new TCPClient.OnMessageReceived() {
+                @Override
+                //here the messageReceived method is implemented
+                public void messageReceived(String message) {
+                    //this method calls the onProgressUpdate
+                    publishProgress(message);
+                }
+            });
+            tcpClient.StartReadingRawStream();
+
+            /*//we create a TCPClient object
+            tcpClient = new TCPClient(new TCPClient.OnMessageReceived() {
+                @Override);
+            tcpClient.StartReadingRawStream();*/
+            Log.d("TCP Client", "Session ended.");
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+            //response received from server
+            Log.d("test", "response " + values[0]);
+            //process server response here....
+
+        }
+    }
 
 
 }
