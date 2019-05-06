@@ -15,11 +15,16 @@ import android.widget.SeekBar;
 import com.Network.thermal_image_processing_pipeline.TCPClient;
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
     private PGMImage img = null, img2 = null, shutter = null;
     private Canvas canvas= null;
     private Pipeline pipeline = null;
     private TCPClient tcpClient;
+    public static ArrayList<PGMImage> stream = new ArrayList<>();
+    private PGMImage imageTemp;
+    private boolean run = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,9 +47,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_main);
-        init();
+        //init();
 
+        //startTCPConnection();
+        //new UpdateTask().execute("");
+        startUpdateWorker();
         new ConnectTask().execute("");
+
+
     }
 
     private void init(){
@@ -107,11 +117,88 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(String... values) {
             super.onProgressUpdate(values);
-            //response received from server
-            Log.d("test", "response " + values[0]);
-            //process server response here....
+            imageTemp = stream.remove(0);
+            ImageView imgView = findViewById(R.id.imageView1);
+            imageTemp.draw(imgView);
+        }
+    }
+
+    public class UpdateTask extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... message) {
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    if(stream != null && stream.size() > 0){
+                        imageTemp = stream.remove(0);
+                        ImageView imgView = findViewById(R.id.imageView1);
+                        imageTemp.draw(imgView);
+                    }
+                }
+            });
+            return "";
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
 
         }
+    }
+
+    public void startTCPConnection(){
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                //we create a TCPClient object
+                tcpClient = new TCPClient(new TCPClient.OnMessageReceived() {
+                    @Override
+                    //here the messageReceived method is implemented
+                    public void messageReceived(String message) {
+                        //this method calls the onProgressUpdate
+                    }
+                });
+                tcpClient.StartReadingRawStream();
+
+            /*//we create a TCPClient object
+            tcpClient = new TCPClient(new TCPClient.OnMessageReceived() {
+                @Override);
+            tcpClient.StartReadingRawStream();*/
+                Log.d("TCP Client", "Session ended.");
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+    }
+
+    public void startUpdateWorker(){
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                while(run){
+                    ImageView imgView = findViewById(R.id.imageView1);
+                    updateView(imgView);
+                }
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+    }
+
+    private void updateView(final ImageView imgView){
+        runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                if(stream != null && stream.size() > 0){
+                    imageTemp = stream.remove(0);
+                    imageTemp.draw(imgView);
+                    //stream.clear();
+                }
+            }
+        });
     }
 
 

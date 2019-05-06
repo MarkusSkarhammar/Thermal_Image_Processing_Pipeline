@@ -1,9 +1,11 @@
 package com.Network.thermal_image_processing_pipeline;
 
 import android.graphics.Bitmap;
+import android.os.health.TimerStat;
 import android.util.Log;
 
 import com.example.thermal_image_processing_pipeline.DisplayHandler;
+import com.example.thermal_image_processing_pipeline.MainActivity;
 import com.example.thermal_image_processing_pipeline.PGMImage;
 
 import java.io.DataInputStream;
@@ -67,7 +69,10 @@ public class TCPClient {
 
                 bufferIn = new DataInputStream( s.getInputStream() );
 
-                if(s.isConnected()){
+                long timeStampStart, timeStampEnd;
+
+                while (!s.isClosed()) {
+                    timeStampStart = System.currentTimeMillis();
                     byte[][] server_params = {
                             {0x48, 0x1e, 0, 0, 0},
                             {0x73, 0, 0, 0, 0},
@@ -79,47 +84,77 @@ public class TCPClient {
                     };
                     for(int i = 0; i < server_params.length; i++){
                         byte[] message = server_params[i];
-                        Log.d("TCP Client", "Sending: [" + message[0] + ", " + message[1] + ", " + message[2] + ", " + message[3] + ", " + message[4] + "]");
+                        //Log.d("TCP Client", "Sending: [" + message[0] + ", " + message[1] + ", " + message[2] + ", " + message[3] + ", " + message[4] + "]");
                         //bufferOut.writeInt(message[0]);
                         //bufferOut.write(message.length);
-                       bufferOut.write(message);
+                        bufferOut.write(message);
                         //bufferOut.flush();
                     }
-                }
 
-                doHeaderStuff();
+                    doHeaderStuff();
 
-                while (rec_bytes < tot_bytes){
-                    b = new byte[tot_bytes - rec_bytes];
-                    bufferIn.read(b);
-                    rec_bytes += b.length;
-                    tempImageData.addAll(toList(b));
-                }
-
-                int[][] array2d = new int[str_h][str_w];
-                int temp, highest = 0;
-                for(int h=0; h<str_h;h++)
-                    for(int w=0;w<str_w;w++){
-                        temp = tempImageData.get((h*str_w) + w);
-                        array2d[h][w] = temp;
-                        if(temp > highest)
-                            highest = temp;
+                    int amountRead = 0;
+                    rec_bytes = 0;
+                    tempImageData.clear();
+                    while (rec_bytes < tot_bytes){
+                        b = new byte[tot_bytes - rec_bytes];
+                        amountRead = bufferIn.read(b);
+                        //Log.d("TCP Client: ", "Data amount read: " + amountRead);
+                        rec_bytes += amountRead;
+                        addDataFromArray(tempImageData, b, 0, amountRead);
                     }
 
-                PGMImage img = new PGMImage(array2d, highest);
-                Bitmap bitmap = DisplayHandler.generateBitmapFromPGM(img);
+                    int[][] array2d = new int[str_h][str_w];
+                    int temp = 0, highest = 0, tempHigest = 0, b1, b2;
+                    int previous = 0;
+                    int next = 0;
+                    double dataIndex = 0.0;
+                    for(int h=0; h<str_h;h++)
+                        for(int w=0;w<str_w;w++){
+                            b1 = tempImageData.get((int)dataIndex); b2 = tempImageData.get(((int)dataIndex)+1);
+                            if(dataIndex % 1 == 0){
+                                temp = b1 | ((b2 & 0xF) << 8);
+                                /*int test = -112;
+                                temp = b1 << 8;
+                            b2 &= ~(1 << 0);
+                            b2 &= ~(1 << 1);
+                            b2 &= ~(1 << 2);
+                            b2 &= ~(1 << 3);
+                            b2 = b2 >> 4;
+                                temp = (temp | b2);*/
+                            }else{
+                                temp = (b1 & 0xF0) | (b2 << 8);
+                                /*
+                                temp = b1 >> 4;
+                                b2 = b2 << 4;
+                                temp = (temp | b2);*/
 
-                while (!s.isClosed()) {
+                            }
+                            array2d[h][w] = temp;
+                            if(temp > highest)
+                                highest = temp;
+                            dataIndex += 1.5;
+                        }
 
-                    serverMessage = "" + bufferIn.read(b);
+                    PGMImage img = new PGMImage(array2d, highest);
+                    img.setBitmap(DisplayHandler.generateBitmapFromPGM(img));
 
-                    int i = b[65537];
-                    if (!serverMessage.contains("-1")) {
-                        Log.d("RESPONSE FROM SERVER", "S: Received Message: '" + serverMessage + "'");
-                        //call the method messageReceived from MyActivity class
-                        //messageListener.messageReceived(serverMessage);
-                    }
-                    serverMessage = "";
+
+                    /*if(MainActivity.stream.size() < 100){
+                        Log.d("TCP Client:", " Added another image. " + MainActivity.stream.size() + " images in buffer.");
+                        MainActivity.stream.add(img);
+                       // messageListener.messageReceived("s");
+                    }*/
+
+                    //Log.d("TCP Client:", " Added another image. " + MainActivity.stream.size() + " images in buffer.");
+                    MainActivity.stream.add(img);
+
+                    timeStampEnd = System.currentTimeMillis();
+
+                    Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
+
+                    byte[] message = {0x24, 1, 0, 0, 0};
+                    bufferOut.write(message);
                 }
                 //Log.d("RESPONSE FROM SERVER", "S: Received Message: '" + serverMessage + "'");
 
@@ -243,6 +278,12 @@ public class TCPClient {
                 list.add(array[i]);
             }
             return list;
+        }
+    }
+
+    private void addDataFromArray(ArrayList<Byte> list, byte[] array, int from, int to) {
+        for(int i = from; i < to; i++) {
+            list.add(array[i]);
         }
     }
 
