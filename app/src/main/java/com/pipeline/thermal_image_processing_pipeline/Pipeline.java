@@ -40,7 +40,7 @@ public class Pipeline {
      */
     public void processImage(PGMImage image){
 
-        Shutter_Correction(image);
+        //Shutter_Correction(image);
 
         OpenCVHandler.equalizeHist(image);
 

@@ -32,7 +32,6 @@ public class TCPClient {
     int str_w = 0,  str_h = 0, str_frm_nbr, str_exposure, str_timestamp_sec, str_timestamp_usec, str_format, num_pix, rec_bytes, tot_bytes = 0, lol;
     double bytes_per_pix = 0;
     byte[] b, imageData;
-    ArrayList<Byte> tempImageData = new ArrayList<>();
 
     private Socket s;
     private final int SERVER_PORT = 1234;
@@ -88,7 +87,6 @@ public class TCPClient {
 
                 while (!s.isClosed()) {
 
-
                     for(int i = 0; i < server_params.length; i++){
                         byte[] message = server_params[i];
                         bufferOut.write(message);
@@ -97,10 +95,8 @@ public class TCPClient {
                     doHeaderStuff();
 
                     timeStampStart = System.currentTimeMillis();
-
                     int amountRead = 0;
                     rec_bytes = 0;
-                    tempImageData.clear();
                     imageData = new byte[tot_bytes];
                     b = new byte[tot_bytes];
                     while (rec_bytes < tot_bytes){
@@ -110,35 +106,17 @@ public class TCPClient {
                         rec_bytes += amountRead;
                     }
 
-                    timeStampEnd = System.currentTimeMillis();
-                    //Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
-
 
                     int[][] array2d = new int[str_h][str_w];
-                    int temp = 0, highest = 0, tempHigest = 0, b1 = 0, b2 = 0, b3 = 0;
-                    int previous = 0;
-                    int next = 0;
+                    int temp = 0, highest = 0, b1, b2 = 0, b3 = 0;
                     double dataIndex = 0.0;
                     for(int h=0; h<str_h;h++)
                         for(int w=0;w<str_w;w++){
                             if(dataIndex % 1 == 0){
                                 b1 = imageData[(int)dataIndex] & 0xff; b2 = imageData[((int)dataIndex)+1] & 0xff; b3 = imageData[((int)dataIndex)+2] & 0xff;
                                 temp = ((b2 & 0xf) << 8) | b1;
-                                /*int test = -112;
-                                temp = b1 << 8;
-                            b2 &= ~(1 << 0);
-                            b2 &= ~(1 << 1);
-                            b2 &= ~(1 << 2);
-                            b2 &= ~(1 << 3);
-                            b2 = b2 >> 4;
-                                temp = (temp | b2);*/
                             }else{
                                 temp = (b2 >> 4) | (b3 << 4);
-                                /*
-                                temp = b1 >> 4;
-                                b2 = b2 << 4;
-                                temp = (temp | b2);*/
-
                             }
                             array2d[h][w] = temp;
                             if(temp > highest)
@@ -146,22 +124,25 @@ public class TCPClient {
                             dataIndex += 1.5;
                         }
 
+                    timeStampEnd = System.currentTimeMillis();
+                    Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
+
                     PGMImage img = new PGMImage(array2d, highest);
                     //img.setBitmap(DisplayHandler.generateBitmapFromPGM(img));
 
 
-                    /*if(MainActivity.stream.size() < 400){
+                    if(MainActivity.stream.size() < 60){
                         //Log.d("TCP Client:", " Added another image. " + MainActivity.stream.size() + " images in buffer.");
                         MainActivity.stream.add(img);
                        // messageListener.messageReceived("s");
-                    }*/
+                    }
 
                     //Log.d("TCP Client:", " Added another image. " + MainActivity.stream.size() + " images in buffer.");
-                    MainActivity.stream.add(img);
-
+                    //MainActivity.stream.add(img);
 
                     byte[] message = {0x24, 1, 0, 0, 0};
                     bufferOut.write(message);
+
                 }
                 //Log.d("RESPONSE FROM SERVER", "S: Received Message: '" + serverMessage + "'");
 

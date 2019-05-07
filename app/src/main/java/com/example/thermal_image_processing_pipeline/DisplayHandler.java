@@ -137,7 +137,7 @@ public class DisplayHandler {
     private static int getColor(int pixelDensity, int color, PGMImage image, boolean andra){
         pixelDensity = Math.abs(pixelDensity);
         Color c = new Color();
-        int colorValue = (int)(((double)pixelDensity / (double)image.getMaxValue()) * 256);
+        int colorValue = (int)(((double)pixelDensity / 4095.0) * 255);
         if(colorValue == 0){
             return Color.BLACK;
         }else if(colorValue == 255){

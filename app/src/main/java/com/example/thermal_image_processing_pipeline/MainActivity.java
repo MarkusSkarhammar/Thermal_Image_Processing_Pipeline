@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_main);
-        //init();
+        init();
 
         //startTCPConnection();
         //new UpdateTask().execute("");
@@ -61,7 +61,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init(){
-        shutter = FileManagement.readFile(MainActivity.this, "Shutter_off000000");
+        pipeline = new Pipeline(MainActivity.this, 384, 288);
+        ImageView imgView = findViewById(R.id.imageView1);
+        /*shutter = FileManagement.readFile(MainActivity.this, "Shutter_off000000");
         pipeline = new Pipeline(MainActivity.this, shutter.getWidth(), shutter.getHeight());
         pipeline.getShutterValues(shutter);
 
@@ -71,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         pipeline.processImage(img);
 
         ImageView imgView = findViewById(R.id.imageView1);
-        img.draw(imgView);
+        img.draw(imgView);*/
 
         // Setup SeekBars for brightness, contrast and sharpening
 
@@ -211,8 +213,10 @@ public class MainActivity extends AppCompatActivity {
                     timeStampStart = System.currentTimeMillis();
                     if(stream != null && stream.size() > 0){
                         imageTemp = stream.remove(0);
-                        if(imageTemp != null)
-                            bitmaps.add(DisplayHandler.generateBitmapFromPGM(imageTemp));
+                        if(imageTemp != null){
+                            pipeline.processImage(imageTemp);
+                            bitmaps.add(imageTemp.getProcessedBitmap());
+                        }
                         //stream.clear();
                     }
                     timeStampEnd = System.currentTimeMillis();
