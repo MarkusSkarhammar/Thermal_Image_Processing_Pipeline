@@ -31,7 +31,8 @@ public class TCPClient {
     // useful variables
     int str_w = 0,  str_h = 0, str_frm_nbr, str_exposure, str_timestamp_sec, str_timestamp_usec, str_format, num_pix, rec_bytes, tot_bytes = 0, lol;
     double bytes_per_pix = 0;
-    byte[] b, imageData;
+    byte[] b;
+    int[] imageData;
     ArrayList<Byte> tempImageData = new ArrayList<>();
 
     private Socket s;
@@ -101,29 +102,30 @@ public class TCPClient {
                     int amountRead = 0;
                     rec_bytes = 0;
                     tempImageData.clear();
-                    imageData = new byte[tot_bytes];
+                    imageData = new int[tot_bytes];
                     b = new byte[tot_bytes];
                     while (rec_bytes < tot_bytes){
-                        amountRead = bufferIn.read(b);
+                       // amountRead = bufferIn.read(b);
                         //Log.d("TCP Client: ", "Data amount read: " + amountRead);
-                        addDataFromArray(imageData, b, rec_bytes, amountRead);
-                        rec_bytes += amountRead;
+                        //addDataFromArray(imageData, b, rec_bytes, amountRead);
+                        imageData[rec_bytes] = bufferIn.readUnsignedByte();
+                        rec_bytes++;
                     }
 
                     timeStampEnd = System.currentTimeMillis();
-                    //Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
+                    Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
 
 
                     int[][] array2d = new int[str_h][str_w];
-                    int temp = 0, highest = 0, tempHigest = 0, b1, b2;
+                    int temp = 0, highest = 0, tempHigest = 0, b1 = 0, b2 = 0, b3 = 0;
                     int previous = 0;
                     int next = 0;
                     double dataIndex = 0.0;
                     for(int h=0; h<str_h;h++)
                         for(int w=0;w<str_w;w++){
-                            b1 = imageData[(int)dataIndex]; b2 = imageData[((int)dataIndex)+1];
                             if(dataIndex % 1 == 0){
-                                temp = b1 | ((b2 & 0xF) << 8);
+                                b1 = imageData[(int)dataIndex]; b2 = imageData[((int)dataIndex)+1]; b3 = imageData[((int)dataIndex)+2];
+                                temp = ((b2 & 0xf) << 8) | b1;
                                 /*int test = -112;
                                 temp = b1 << 8;
                             b2 &= ~(1 << 0);
@@ -133,7 +135,7 @@ public class TCPClient {
                             b2 = b2 >> 4;
                                 temp = (temp | b2);*/
                             }else{
-                                temp = (b1 & 0xF0) | (b2 << 8);
+                                temp = (b2 >> 4) | (b3 << 4);
                                 /*
                                 temp = b1 >> 4;
                                 b2 = b2 << 4;
