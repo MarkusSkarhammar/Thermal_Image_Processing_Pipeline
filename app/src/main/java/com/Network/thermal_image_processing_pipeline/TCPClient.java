@@ -8,14 +8,20 @@ import com.example.thermal_image_processing_pipeline.DisplayHandler;
 import com.example.thermal_image_processing_pipeline.MainActivity;
 import com.example.thermal_image_processing_pipeline.PGMImage;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.Socket;
 
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +31,7 @@ public class TCPClient {
     // useful variables
     int str_w = 0,  str_h = 0, str_frm_nbr, str_exposure, str_timestamp_sec, str_timestamp_usec, str_format, num_pix, rec_bytes, tot_bytes = 0, lol;
     double bytes_per_pix = 0;
-    byte[] b;
+    byte[] b, imageData;
     ArrayList<Byte> tempImageData = new ArrayList<>();
 
     private Socket s;
@@ -66,43 +72,47 @@ public class TCPClient {
                 //bufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(s.getOutputStream())), true);
                 bufferOut = new DataOutputStream(s.getOutputStream());
 
-
                 bufferIn = new DataInputStream( s.getInputStream() );
 
                 long timeStampStart, timeStampEnd;
 
+                byte[][] server_params = {
+                        {0x48, 0x1e, 0, 0, 0},
+                        {0x73, 0, 0, 0, 0},
+                        {0x77, (byte) 0x80, 0x01, 0, 0},
+                        {0x68, 0x20, 0x01, 0, 0},
+                        {0x78, 0, 0, 0, 0},
+                        {0x79, 0, 0, 0, 0},
+                        {0x65, 0x02, 0, 0, 0}
+                };
+
                 while (!s.isClosed()) {
-                    timeStampStart = System.currentTimeMillis();
-                    byte[][] server_params = {
-                            {0x48, 0x1e, 0, 0, 0},
-                            {0x73, 0, 0, 0, 0},
-                            {0x77, (byte) 0x80, 0x01, 0, 0},
-                            {0x68, 0x20, 0x01, 0, 0},
-                            {0x78, 0, 0, 0, 0},
-                            {0x79, 0, 0, 0, 0},
-                            {0x65, 0x02, 0, 0, 0}
-                    };
+
+
                     for(int i = 0; i < server_params.length; i++){
                         byte[] message = server_params[i];
-                        //Log.d("TCP Client", "Sending: [" + message[0] + ", " + message[1] + ", " + message[2] + ", " + message[3] + ", " + message[4] + "]");
-                        //bufferOut.writeInt(message[0]);
-                        //bufferOut.write(message.length);
                         bufferOut.write(message);
-                        //bufferOut.flush();
                     }
 
                     doHeaderStuff();
 
+                    timeStampStart = System.currentTimeMillis();
+
                     int amountRead = 0;
                     rec_bytes = 0;
                     tempImageData.clear();
+                    imageData = new byte[tot_bytes];
+                    b = new byte[tot_bytes];
                     while (rec_bytes < tot_bytes){
-                        b = new byte[tot_bytes - rec_bytes];
                         amountRead = bufferIn.read(b);
                         //Log.d("TCP Client: ", "Data amount read: " + amountRead);
+                        addDataFromArray(imageData, b, rec_bytes, amountRead);
                         rec_bytes += amountRead;
-                        addDataFromArray(tempImageData, b, 0, amountRead);
                     }
+
+                    timeStampEnd = System.currentTimeMillis();
+                    //Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
+
 
                     int[][] array2d = new int[str_h][str_w];
                     int temp = 0, highest = 0, tempHigest = 0, b1, b2;
@@ -111,7 +121,7 @@ public class TCPClient {
                     double dataIndex = 0.0;
                     for(int h=0; h<str_h;h++)
                         for(int w=0;w<str_w;w++){
-                            b1 = tempImageData.get((int)dataIndex); b2 = tempImageData.get(((int)dataIndex)+1);
+                            b1 = imageData[(int)dataIndex]; b2 = imageData[((int)dataIndex)+1];
                             if(dataIndex % 1 == 0){
                                 temp = b1 | ((b2 & 0xF) << 8);
                                 /*int test = -112;
@@ -137,11 +147,11 @@ public class TCPClient {
                         }
 
                     PGMImage img = new PGMImage(array2d, highest);
-                    img.setBitmap(DisplayHandler.generateBitmapFromPGM(img));
+                    //img.setBitmap(DisplayHandler.generateBitmapFromPGM(img));
 
 
-                    /*if(MainActivity.stream.size() < 100){
-                        Log.d("TCP Client:", " Added another image. " + MainActivity.stream.size() + " images in buffer.");
+                    /*if(MainActivity.stream.size() < 400){
+                        //Log.d("TCP Client:", " Added another image. " + MainActivity.stream.size() + " images in buffer.");
                         MainActivity.stream.add(img);
                        // messageListener.messageReceived("s");
                     }*/
@@ -149,9 +159,6 @@ public class TCPClient {
                     //Log.d("TCP Client:", " Added another image. " + MainActivity.stream.size() + " images in buffer.");
                     MainActivity.stream.add(img);
 
-                    timeStampEnd = System.currentTimeMillis();
-
-                    Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
 
                     byte[] message = {0x24, 1, 0, 0, 0};
                     bufferOut.write(message);
@@ -281,10 +288,8 @@ public class TCPClient {
         }
     }
 
-    private void addDataFromArray(ArrayList<Byte> list, byte[] array, int from, int to) {
-        for(int i = from; i < to; i++) {
-            list.add(array[i]);
-        }
+    private void addDataFromArray(byte[] arrayTo, byte[] arrayFrom, int at, int length) {
+        System.arraycopy(arrayFrom, 0, arrayTo, at, length);
     }
 
 }

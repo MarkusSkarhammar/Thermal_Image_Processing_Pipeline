@@ -5,6 +5,7 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private Pipeline pipeline = null;
     private TCPClient tcpClient;
     public static ArrayList<PGMImage> stream = new ArrayList<>();
+    public static ArrayList<Bitmap> bitmaps = new ArrayList<>();
     private PGMImage imageTemp;
     private boolean run = true;
 
@@ -52,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         //startTCPConnection();
         //new UpdateTask().execute("");
         startUpdateWorker();
+        generateBitmaps();
         new ConnectTask().execute("");
 
 
@@ -192,13 +195,33 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void run() {
-                if(stream != null && stream.size() > 0){
-                    imageTemp = stream.remove(0);
-                    imageTemp.draw(imgView);
+                if(bitmaps != null && bitmaps.size() > 0){
+                    DisplayHandler.DrawCanvas(bitmaps.remove(0), imgView);
                     //stream.clear();
                 }
             }
         });
+    }
+    private void generateBitmaps(){
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                long timeStampStart, timeStampEnd;
+                while(run){
+                    timeStampStart = System.currentTimeMillis();
+                    if(stream != null && stream.size() > 0){
+                        imageTemp = stream.remove(0);
+                        if(imageTemp != null)
+                            bitmaps.add(DisplayHandler.generateBitmapFromPGM(imageTemp));
+                        //stream.clear();
+                    }
+                    timeStampEnd = System.currentTimeMillis();
+                    //Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
+                }
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
     }
 
 
