@@ -31,8 +31,7 @@ public class TCPClient {
     // useful variables
     int str_w = 0,  str_h = 0, str_frm_nbr, str_exposure, str_timestamp_sec, str_timestamp_usec, str_format, num_pix, rec_bytes, tot_bytes = 0, lol;
     double bytes_per_pix = 0;
-    byte[] b;
-    int[] imageData;
+    byte[] b, imageData;
     ArrayList<Byte> tempImageData = new ArrayList<>();
 
     private Socket s;
@@ -102,18 +101,17 @@ public class TCPClient {
                     int amountRead = 0;
                     rec_bytes = 0;
                     tempImageData.clear();
-                    imageData = new int[tot_bytes];
+                    imageData = new byte[tot_bytes];
                     b = new byte[tot_bytes];
                     while (rec_bytes < tot_bytes){
-                       // amountRead = bufferIn.read(b);
+                        amountRead = bufferIn.read(b);
                         //Log.d("TCP Client: ", "Data amount read: " + amountRead);
-                        //addDataFromArray(imageData, b, rec_bytes, amountRead);
-                        imageData[rec_bytes] = bufferIn.readUnsignedByte();
-                        rec_bytes++;
+                        addDataFromArray(imageData, b, rec_bytes, amountRead);
+                        rec_bytes += amountRead;
                     }
 
                     timeStampEnd = System.currentTimeMillis();
-                    Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
+                    //Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
 
 
                     int[][] array2d = new int[str_h][str_w];
@@ -124,7 +122,7 @@ public class TCPClient {
                     for(int h=0; h<str_h;h++)
                         for(int w=0;w<str_w;w++){
                             if(dataIndex % 1 == 0){
-                                b1 = imageData[(int)dataIndex]; b2 = imageData[((int)dataIndex)+1]; b3 = imageData[((int)dataIndex)+2];
+                                b1 = imageData[(int)dataIndex] & 0xff; b2 = imageData[((int)dataIndex)+1] & 0xff; b3 = imageData[((int)dataIndex)+2] & 0xff;
                                 temp = ((b2 & 0xf) << 8) | b1;
                                 /*int test = -112;
                                 temp = b1 << 8;
