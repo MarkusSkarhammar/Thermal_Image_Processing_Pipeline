@@ -2,6 +2,7 @@ package com.pipeline.thermal_image_processing_pipeline;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.example.thermal_image_processing_pipeline.FileManagement;
@@ -42,9 +43,21 @@ public class Pipeline {
 
         //Shutter_Correction(image);
 
+        long timeStampStart, timeStampEnd;
+        timeStampStart = System.currentTimeMillis();
+
         OpenCVHandler.equalizeHist(image);
 
+        timeStampEnd = System.currentTimeMillis();
+        //Log.d("Pipeline:", " Time for histogram equalization: " + (timeStampEnd - timeStampStart) + " ms.");
+
+
+        timeStampStart = System.currentTimeMillis();
+
         OpenCVHandler.PixelCorrection(image.getProcessedBitmap());
+
+        timeStampEnd = System.currentTimeMillis();
+        //Log.d("Pipeline:", " Time for pixel correction: " + (timeStampEnd - timeStampStart) + " ms.");
     }
 
     /**

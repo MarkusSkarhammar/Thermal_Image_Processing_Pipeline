@@ -1,6 +1,7 @@
 package com.Network.thermal_image_processing_pipeline;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.health.TimerStat;
 import android.util.Log;
 
@@ -29,9 +30,10 @@ import java.util.List;
 public class TCPClient {
 
     // useful variables
-    int str_w = 0,  str_h = 0, str_frm_nbr, str_exposure, str_timestamp_sec, str_timestamp_usec, str_format, num_pix, rec_bytes, tot_bytes = 0, lol;
-    double bytes_per_pix = 0;
-    byte[] b, imageData;
+    private int str_w = 0,  str_h = 0, str_frm_nbr, str_exposure, str_timestamp_sec, str_timestamp_usec, str_format, num_pix, rec_bytes, tot_bytes = 0, lol;
+    private double bytes_per_pix = 0;
+    private byte[] b, imageData;
+    private Color c = new Color();
 
     private Socket s;
     private final int SERVER_PORT = 1234;
@@ -73,7 +75,13 @@ public class TCPClient {
 
                 bufferIn = new DataInputStream( s.getInputStream() );
 
-                long timeStampStart, timeStampEnd;
+                long timeStampStart, timeStampEnd, timeStampStart2, timeStampEnd2, timeStampStart3, timeStampEnd3, timeStampStart4, timeStampEnd4;
+
+                int[][] array2d;
+
+                int amountRead, temp = 0, highest = 0, b1, b2 = 0, b3 = 0, colorValue;
+
+                byte[] message, ack = {0x24, 1, 0, 0, 0};
 
                 byte[][] server_params = {
                         {0x48, 0x1e, 0, 0, 0},
@@ -87,28 +95,37 @@ public class TCPClient {
 
                 while (!s.isClosed()) {
 
+                    timeStampStart = System.currentTimeMillis();
+
                     for(int i = 0; i < server_params.length; i++){
-                        byte[] message = server_params[i];
+                        message = server_params[i];
                         bufferOut.write(message);
                     }
 
+                    timeStampStart4 = System.currentTimeMillis();
+
                     doHeaderStuff();
 
-                    timeStampStart = System.currentTimeMillis();
-                    int amountRead = 0;
+                    timeStampEnd4 = System.currentTimeMillis();
+                    Log.d("TCP Client:", " Time to do header stuff: " + (timeStampEnd4 - timeStampStart4) + " ms.");
+
+                    timeStampStart3 = System.currentTimeMillis();
+                    amountRead = 0;
                     rec_bytes = 0;
                     imageData = new byte[tot_bytes];
-                    b = new byte[tot_bytes];
+                    b = new byte[66000];
                     while (rec_bytes < tot_bytes){
                         amountRead = bufferIn.read(b);
-                        //Log.d("TCP Client: ", "Data amount read: " + amountRead);
                         addDataFromArray(imageData, b, rec_bytes, amountRead);
                         rec_bytes += amountRead;
                     }
+                    timeStampEnd3 = System.currentTimeMillis();
+                    Log.d("TCP Client:", " Time retrieve image data: " + (timeStampEnd3 - timeStampStart3) + " ms.");
 
+                    timeStampStart2 = System.currentTimeMillis();
 
-                    int[][] array2d = new int[str_h][str_w];
-                    int temp = 0, highest = 0, b1, b2 = 0, b3 = 0;
+                    array2d = new int[str_h][str_w];
+                    temp = 0; highest = 0; b2 = 0; b3 = 0;
                     double dataIndex = 0.0;
                     for(int h=0; h<str_h;h++)
                         for(int w=0;w<str_w;w++){
@@ -118,30 +135,26 @@ public class TCPClient {
                             }else{
                                 temp = (b2 >> 4) | (b3 << 4);
                             }
-                            array2d[h][w] = temp;
+                            colorValue = (int)(((double)temp / 4095.0) * 255);
+                            array2d[h][w] = c.rgb(colorValue, colorValue, colorValue);;
                             if(temp > highest)
                                 highest = temp;
                             dataIndex += 1.5;
                         }
 
-                    timeStampEnd = System.currentTimeMillis();
-                    Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
+                    timeStampEnd2 = System.currentTimeMillis();
+                    Log.d("TCP Client:", " Time to process image data: " + (timeStampEnd2 - timeStampStart2) + " ms.");
 
-                    PGMImage img = new PGMImage(array2d, highest);
-                    //img.setBitmap(DisplayHandler.generateBitmapFromPGM(img));
-
-
-                    if(MainActivity.stream.size() < 60){
-                        //Log.d("TCP Client:", " Added another image. " + MainActivity.stream.size() + " images in buffer.");
+                    if(MainActivity.stream.size() < 180){
+                        PGMImage img = new PGMImage(array2d, highest);
                         MainActivity.stream.add(img);
-                       // messageListener.messageReceived("s");
                     }
 
-                    //Log.d("TCP Client:", " Added another image. " + MainActivity.stream.size() + " images in buffer.");
-                    //MainActivity.stream.add(img);
+                    // Send server an ack message
+                    bufferOut.write(ack);
 
-                    byte[] message = {0x24, 1, 0, 0, 0};
-                    bufferOut.write(message);
+                    timeStampEnd = System.currentTimeMillis();
+                    Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
 
                 }
                 //Log.d("RESPONSE FROM SERVER", "S: Received Message: '" + serverMessage + "'");
@@ -254,19 +267,6 @@ public class TCPClient {
         num_pix = (int) (str_w * str_h * bytes_per_pix);
         if (tot_bytes != num_pix)
             throw new Exception("ERROR: tot_bytes != num_pix");
-    }
-
-    private static List<Byte> toList(byte[] array) {
-        if (array==null) {
-            return new ArrayList(0);
-        } else {
-            int size = array.length;
-            List<Byte> list = new ArrayList(size);
-            for(int i = 0; i < size; i++) {
-                list.add(array[i]);
-            }
-            return list;
-        }
     }
 
     private void addDataFromArray(byte[] arrayTo, byte[] arrayFrom, int at, int length) {

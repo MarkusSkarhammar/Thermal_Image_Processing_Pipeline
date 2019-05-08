@@ -31,8 +31,9 @@ public class DisplayHandler {
 
         Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),  ARGB_8888);
         pixels = new int[image.getWidth()*image.getHeight()];
+        int[][] data = image.getData();
 
-        ArrayList<Thread> threads = new ArrayList<>();
+        /*ArrayList<Thread> threads = new ArrayList<>();
         int amount = 2;
         for(int k=0; k<2; k++)
             for(int i=0; i<amount/2; i++){
@@ -57,12 +58,13 @@ public class DisplayHandler {
             t4.join();
         } catch (InterruptedException e) {
             Log.d("Bitmap generator: ","Interrupted exception: " + e);
-        }
+        }*/
         for(int x = 0; x < image.getWidth(); x++){
             for(int y = 0; y < image.getHeight(); y++){
-                pixels[(y*image.getWidth()) + x] = getColor(image.getDataAt(x, y), color, image, true);
+                //pixels[(y*image.getWidth()) + x] = getColor(image.getDataAt(x, y), color, image, true);
+                pixels[(y*image.getWidth()) + x] = data[y][x];
             }
-        }*/
+        }
 
         bitmap.setPixels(pixels, 0, bitmap.getWidth(), 0, 0, image.getWidth(), image.getHeight());
 
