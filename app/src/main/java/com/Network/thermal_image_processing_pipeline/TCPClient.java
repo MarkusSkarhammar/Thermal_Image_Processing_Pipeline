@@ -4,10 +4,13 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.health.TimerStat;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.example.thermal_image_processing_pipeline.DisplayHandler;
 import com.example.thermal_image_processing_pipeline.MainActivity;
 import com.example.thermal_image_processing_pipeline.PGMImage;
+import com.example.thermal_image_processing_pipeline.R;
+import com.log.log;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -79,7 +82,7 @@ public class TCPClient {
 
                 int[][] array2d;
 
-                int amountRead, temp = 0, highest = 0, b1, b2 = 0, b3 = 0, colorValue;
+                int amountRead, temp = 0, highest = 0, b1, b2 = 0, b3 = 0, colorValue, dataIndex;
 
                 byte[] message, ack = {0x24, 1, 0, 0, 0};
 
@@ -102,15 +105,15 @@ public class TCPClient {
                         bufferOut.write(message);
                     }
 
-                    timeStampStart4 = System.currentTimeMillis();
+                    //timeStampStart4 = System.currentTimeMillis();
 
                     doHeaderStuff();
 
-                    timeStampEnd4 = System.currentTimeMillis();
-                    Log.d("TCP Client:", " Time to do header stuff: " + (timeStampEnd4 - timeStampStart4) + " ms.");
+                    //timeStampEnd4 = System.currentTimeMillis();
+                    //Log.d("TCP Client:", " Time to do header stuff: " + (timeStampEnd4 - timeStampStart4) + " ms.");
 
-                    timeStampStart3 = System.currentTimeMillis();
-                    amountRead = 0;
+                    //timeStampStart3 = System.currentTimeMillis();
+                    //amountRead = 0;
                     rec_bytes = 0;
                     imageData = new byte[tot_bytes];
                     b = new byte[66000];
@@ -119,33 +122,35 @@ public class TCPClient {
                         addDataFromArray(imageData, b, rec_bytes, amountRead);
                         rec_bytes += amountRead;
                     }
-                    timeStampEnd3 = System.currentTimeMillis();
-                    Log.d("TCP Client:", " Time retrieve image data: " + (timeStampEnd3 - timeStampStart3) + " ms.");
+                    //timeStampEnd3 = System.currentTimeMillis();
+                    //log.addInput(" Time to get image data: " + (timeStampEnd3 - timeStampStart3) + " ms.");
 
-                    timeStampStart2 = System.currentTimeMillis();
+                    //timeStampStart2 = System.currentTimeMillis();
 
                     array2d = new int[str_h][str_w];
                     temp = 0; highest = 0; b2 = 0; b3 = 0;
-                    double dataIndex = 0.0;
+                    dataIndex = 0;
                     for(int h=0; h<str_h;h++)
                         for(int w=0;w<str_w;w++){
-                            if(dataIndex % 1 == 0){
-                                b1 = imageData[(int)dataIndex] & 0xff; b2 = imageData[((int)dataIndex)+1] & 0xff; b3 = imageData[((int)dataIndex)+2] & 0xff;
+
+                            if(dataIndex % 3 == 0){
+                                b1 = imageData[dataIndex] & 0xff; b2 = imageData[(dataIndex)+1] & 0xff; b3 = imageData[(dataIndex)+2] & 0xff;
                                 temp = ((b2 & 0xf) << 8) | b1;
+                                dataIndex += 1;
                             }else{
                                 temp = (b2 >> 4) | (b3 << 4);
+                                dataIndex += 2;
                             }
                             colorValue = (int)(((double)temp / 4095.0) * 255);
-                            array2d[h][w] = c.rgb(colorValue, colorValue, colorValue);;
-                            if(temp > highest)
-                                highest = temp;
-                            dataIndex += 1.5;
+                            array2d[h][w] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
+                            //if(temp > highest)
+                                //highest = temp;
                         }
 
-                    timeStampEnd2 = System.currentTimeMillis();
-                    Log.d("TCP Client:", " Time to process image data: " + (timeStampEnd2 - timeStampStart2) + " ms.");
+                    //timeStampEnd2 = System.currentTimeMillis();
+                    //log.addInput(" Time to process image data: " + (timeStampEnd2 - timeStampStart2) + " ms.");
 
-                    if(MainActivity.stream.size() < 180){
+                    if(MainActivity.stream.size() < 5){
                         PGMImage img = new PGMImage(array2d, highest);
                         MainActivity.stream.add(img);
                     }
@@ -154,7 +159,9 @@ public class TCPClient {
                     bufferOut.write(ack);
 
                     timeStampEnd = System.currentTimeMillis();
-                    Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
+                    log.addInput(" Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
+                    //Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
+
 
                 }
                 //Log.d("RESPONSE FROM SERVER", "S: Received Message: '" + serverMessage + "'");

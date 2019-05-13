@@ -12,11 +12,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.Network.thermal_image_processing_pipeline.TCPClient;
+import com.log.log;
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity {
     private PGMImage img = null, img2 = null, shutter = null;
@@ -25,8 +28,13 @@ public class MainActivity extends AppCompatActivity {
     private TCPClient tcpClient;
     public static ArrayList<PGMImage> stream = new ArrayList<>();
     public static ArrayList<Bitmap> bitmaps = new ArrayList<>();
-    private PGMImage imageTemp;
+    private PGMImage imageTemp, imageTemp2;
     private boolean run = true;
+    private AtomicBoolean streamLock = new AtomicBoolean();
+
+    public static int brightness = 0;
+    public static double contrast = 1.0;
+    public static int sharpening = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +59,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         init();
 
-        //startTCPConnection();
-        //new UpdateTask().execute("");
-        startUpdateWorker();
         generateBitmaps();
         new ConnectTask().execute("");
 
@@ -63,19 +68,6 @@ public class MainActivity extends AppCompatActivity {
     private void init(){
         pipeline = new Pipeline(MainActivity.this, 384, 288);
         ImageView imgView = findViewById(R.id.imageView1);
-        /*shutter = FileManagement.readFile(MainActivity.this, "Shutter_off000000");
-        pipeline = new Pipeline(MainActivity.this, shutter.getWidth(), shutter.getHeight());
-        pipeline.getShutterValues(shutter);
-
-        // Image 1
-        img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
-
-        pipeline.processImage(img);
-
-        ImageView imgView = findViewById(R.id.imageView1);
-        img.draw(imgView);*/
-
-        // Setup SeekBars for brightness, contrast and sharpening
 
         final SeekBar brightness=(SeekBar) findViewById(R.id.seekBar1);
         final SeekBar contrast=(SeekBar) findViewById(R.id.seekBar2);
@@ -85,6 +77,12 @@ public class MainActivity extends AppCompatActivity {
         brightness.setOnSeekBarChangeListener(seekBarListener);
         contrast.setOnSeekBarChangeListener(seekBarListener);
         sharpening.setOnSeekBarChangeListener(seekBarListener);
+
+        streamLock.set(false);
+
+        TextView txtView = findViewById(R.id.textView3);
+        log.setTextView(txtView);
+        log.setActivity(MainActivity.this);
     }
 
 
@@ -128,99 +126,58 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public class UpdateTask extends AsyncTask<String, String, String> {
-
-        @Override
-        protected String doInBackground(String... message) {
-            runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    if(stream != null && stream.size() > 0){
-                        imageTemp = stream.remove(0);
-                        ImageView imgView = findViewById(R.id.imageView1);
-                        imageTemp.draw(imgView);
-                    }
-                }
-            });
-            return "";
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
-
-        }
-    }
-
-    public void startTCPConnection(){
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                //we create a TCPClient object
-                tcpClient = new TCPClient(new TCPClient.OnMessageReceived() {
-                    @Override
-                    //here the messageReceived method is implemented
-                    public void messageReceived(String message) {
-                        //this method calls the onProgressUpdate
-                    }
-                });
-                tcpClient.StartReadingRawStream();
-
-            /*//we create a TCPClient object
-            tcpClient = new TCPClient(new TCPClient.OnMessageReceived() {
-                @Override);
-            tcpClient.StartReadingRawStream();*/
-                Log.d("TCP Client", "Session ended.");
-            }
-        };
-        Thread thread = new Thread(runnable);
-        thread.start();
-    }
-
-    public void startUpdateWorker(){
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                while(run){
-                    ImageView imgView = findViewById(R.id.imageView1);
-                    updateView(imgView);
-                }
-            }
-        };
-        Thread thread = new Thread(runnable);
-        thread.start();
-    }
-
     private void updateView(final ImageView imgView){
         runOnUiThread(new Runnable() {
 
             @Override
             public void run() {
-                if(bitmaps != null && bitmaps.size() > 0){
-                    DisplayHandler.DrawCanvas(bitmaps.remove(0), imgView);
-                    //stream.clear();
+                if(stream != null && stream.size() > 0){
+                    if(streamLock.compareAndSet(false, true)){
+                        imageTemp2 = stream.get(0);
+                        if(imageTemp2.getProcessedBitmap() != null){
+                            long timeStampStart, timeStampEnd;
+                            timeStampStart = System.currentTimeMillis();
+
+                            DisplayHandler.DrawCanvas(imageTemp2.getProcessedBitmap(), imgView);
+                            stream.remove(0);
+
+                            timeStampEnd = System.currentTimeMillis();
+                            Log.d("Pipeline:", " Time to process image: " + (timeStampEnd - timeStampStart) + " ms.");
+                            //txtView.setText("Time to process image: " + (timeStampEnd - timeStampStart) + " ms.");
+
+                        }
+                        streamLock.set(false);
+                    }
                 }
             }
         });
     }
+
     private void generateBitmaps(){
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 long timeStampStart, timeStampEnd;
+                ImageView imgView = findViewById(R.id.imageView1);
                 while(run){
-                    timeStampStart = System.currentTimeMillis();
                     if(stream != null && stream.size() > 0){
-                        imageTemp = stream.remove(0);
-                        if(imageTemp != null){
-                            pipeline.processImage(imageTemp);
-                            bitmaps.add(imageTemp.getProcessedBitmap());
+
+                        if(streamLock.compareAndSet(false, true)){
+                            if(stream.size() > 0){
+                                imageTemp = stream.get(0);
+                                if(imageTemp != null && imageTemp.getProcessedBitmap() == null){
+                                    //timeStampStart = System.currentTimeMillis();
+                                    log.addInput3("Amount in stream: " + stream.size());
+                                    pipeline.processImage(imageTemp);
+                                    //timeStampEnd = System.currentTimeMillis();
+                                    //log.addInput2(" Time to process image: " + (timeStampEnd - timeStampStart) + " ms.");
+                                }
+                            }
+                            streamLock.set(false);
                         }
-                        //stream.clear();
+                        if(stream.size() > 0)
+                            updateView(imgView);
                     }
-                    timeStampEnd = System.currentTimeMillis();
-                    //Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
                 }
             }
         };

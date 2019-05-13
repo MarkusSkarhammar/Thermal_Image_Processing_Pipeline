@@ -10,9 +10,11 @@ import com.example.thermal_image_processing_pipeline.MainActivity;
 import com.example.thermal_image_processing_pipeline.OpenCVHandler;
 import com.example.thermal_image_processing_pipeline.PGMImage;
 import com.example.thermal_image_processing_pipeline.R;
+import com.log.log;
 
 public class Pipeline {
     private Shutter_Correction shutter;
+    long timeStampStart, timeStampEnd;
     private float[][] gain;
 
     /**
@@ -43,21 +45,24 @@ public class Pipeline {
 
         //Shutter_Correction(image);
 
-        long timeStampStart, timeStampEnd;
         timeStampStart = System.currentTimeMillis();
 
         OpenCVHandler.equalizeHist(image);
 
-        timeStampEnd = System.currentTimeMillis();
+        //timeStampEnd = System.currentTimeMillis();
         //Log.d("Pipeline:", " Time for histogram equalization: " + (timeStampEnd - timeStampStart) + " ms.");
 
 
-        timeStampStart = System.currentTimeMillis();
+        //timeStampStart = System.currentTimeMillis();
 
         OpenCVHandler.PixelCorrection(image.getProcessedBitmap());
 
+        ContrastAndBrightness(image.getProcessedBitmap(), MainActivity.contrast, MainActivity.brightness);
+
+        OpenCVHandler.Sharpening(image.getProcessedBitmap(), MainActivity.sharpening);
+
         timeStampEnd = System.currentTimeMillis();
-        //Log.d("Pipeline:", " Time for pixel correction: " + (timeStampEnd - timeStampStart) + " ms.");
+        log.addInput2(" Time to process image: " + (timeStampEnd - timeStampStart) + " ms.");
     }
 
     /**
