@@ -82,6 +82,8 @@ public class TCPClient {
 
                 int[][] array2d;
 
+                int[] dataAsInt;
+
                 int amountRead, temp = 0, highest = 0, b1, b2 = 0, b3 = 0, colorValue, dataIndex;
 
                 byte[] message, ack = {0x24, 1, 0, 0, 0};
@@ -127,7 +129,8 @@ public class TCPClient {
 
                     //timeStampStart2 = System.currentTimeMillis();
 
-                    array2d = new int[str_h][str_w];
+                    //array2d = new int[str_h][str_w];
+                    /*dataAsInt = new int[str_h*str_w];
                     temp = 0; highest = 0; b2 = 0; b3 = 0;
                     dataIndex = 0;
                     for(int h=0; h<str_h;h++)
@@ -142,17 +145,18 @@ public class TCPClient {
                                 dataIndex += 2;
                             }
                             colorValue = (int)(((double)temp / 4095.0) * 255);
-                            array2d[h][w] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
+                            //array2d[h][w] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
+                            dataAsInt[(h*str_w) + w] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
                             //if(temp > highest)
                                 //highest = temp;
-                        }
+                        }*/
 
                     //timeStampEnd2 = System.currentTimeMillis();
                     //log.addInput(" Time to process image data: " + (timeStampEnd2 - timeStampStart2) + " ms.");
 
                     if(MainActivity.stream.size() < 5){
-                        PGMImage img = new PGMImage(array2d, highest);
-                        MainActivity.stream.add(img);
+                        //PGMImage img = new PGMImage(dataAsInt);
+                        MainActivity.stream.add(imageData);
                     }
 
                     // Send server an ack message
@@ -233,10 +237,10 @@ public class TCPClient {
             data = Arrays.copyOfRange(b, 1, b.length);
             switch (m){
                 case 'w':
-                    str_w = fromByteArray(data);
+                    MainActivity.str_w = fromByteArray(data);
                     break;
                 case 'h':
-                    str_h = fromByteArray(data);
+                    MainActivity.str_h = fromByteArray(data);
                     break;
                 case 's':
                     str_frm_nbr = fromByteArray(data);
@@ -271,7 +275,7 @@ public class TCPClient {
             header_length -= b.length;
         }
 
-        num_pix = (int) (str_w * str_h * bytes_per_pix);
+        num_pix = (int) (MainActivity.str_w * MainActivity.str_h * bytes_per_pix);
         if (tot_bytes != num_pix)
             throw new Exception("ERROR: tot_bytes != num_pix");
     }

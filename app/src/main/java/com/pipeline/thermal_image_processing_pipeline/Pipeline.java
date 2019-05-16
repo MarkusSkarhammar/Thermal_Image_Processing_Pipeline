@@ -45,7 +45,7 @@ public class Pipeline {
 
         //Shutter_Correction(image);
 
-        timeStampStart = System.currentTimeMillis();
+        //timeStampStart = System.currentTimeMillis();
 
         OpenCVHandler.equalizeHist(image);
 
@@ -61,8 +61,8 @@ public class Pipeline {
 
         OpenCVHandler.Sharpening(image.getProcessedBitmap(), MainActivity.sharpening);
 
-        timeStampEnd = System.currentTimeMillis();
-        log.addInput2(" Time to process image: " + (timeStampEnd - timeStampStart) + " ms.");
+        //timeStampEnd = System.currentTimeMillis();
+        //log.addInput2(" Time to process image: " + (timeStampEnd - timeStampStart) + " ms.");
     }
 
     /**

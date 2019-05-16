@@ -3,12 +3,15 @@ package com.example.thermal_image_processing_pipeline;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 
+import java.util.ArrayList;
+
 public class PGMImage {
     private int[][] data;
     private int[][] colorValues;
     private int width, height, maxValue, brightness, sharpening;
     private double contrast = 1.0;
     private Bitmap bitmap = null, processedBitmap = null;
+    private int[] dataList;
 
     public PGMImage(int[][] data, int maxValue){
         this.data = data;
@@ -16,6 +19,12 @@ public class PGMImage {
         this.height = data.length;
         this.maxValue = maxValue;
         this.colorValues = new int[height][width];
+    }
+
+    public PGMImage(int[] dataList){
+        this.width = 384;
+        this.height = 288;
+        this.dataList = dataList;
     }
 
     public int getWidth() { return width; };
@@ -76,7 +85,6 @@ public class PGMImage {
         this.processedBitmap = processedBitmap;
     }
 
-
     public Bitmap getBitmap() {
         return bitmap;
     }
@@ -114,5 +122,9 @@ public class PGMImage {
 
     public void setSharpening(int sharpening) {
         this.sharpening = sharpening;
+    }
+
+    public int[] getDataList() {
+        return dataList;
     }
 }
