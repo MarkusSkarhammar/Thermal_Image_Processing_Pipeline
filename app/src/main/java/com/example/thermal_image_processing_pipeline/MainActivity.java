@@ -5,21 +5,46 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.Network.thermal_image_processing_pipeline.TCPClient;
+import com.log.log;
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
+
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity {
     private PGMImage img = null, img2 = null, shutter = null;
     private Canvas canvas= null;
     private Pipeline pipeline = null;
     private TCPClient tcpClient;
+    public static ArrayList<byte[]> stream = new ArrayList<>();
+    private ArrayList<PGMImage> imageStream = new ArrayList<>();
+    private ArrayList<SubArray> subArrays = new ArrayList<>();
+    private PGMImage imageTemp;
+    private int[] dataTemp;
+    private boolean run = true;
+    private AtomicBoolean streamLock = new AtomicBoolean();
+
+    public static int brightness = 0;
+    public static double contrast = 1.0;
+    public static int sharpening = 0;
+
+    public static int str_w = 0,  str_h = 0;
+
+    private int[] dataAsInt;
+
+    private Thread t1, t2;
+
+    private int temp = 0, highest = 0, b1, b2 = 0, b3 = 0, colorValue, dataIndex;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,23 +69,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         init();
 
+        generateBitmaps();
         new ConnectTask().execute("");
+
+
     }
 
     private void init(){
-        shutter = FileManagement.readFile(MainActivity.this, "Shutter_off000000");
-        pipeline = new Pipeline(MainActivity.this, shutter.getWidth(), shutter.getHeight());
-        pipeline.getShutterValues(shutter);
-
-        // Image 1
-        img = FileManagement.readFile(MainActivity.this, "Corri_raw000070");
-
-        pipeline.processImage(img);
-
+        pipeline = new Pipeline(MainActivity.this, 384, 288);
         ImageView imgView = findViewById(R.id.imageView1);
-        img.draw(imgView);
-
-        // Setup SeekBars for brightness, contrast and sharpening
 
         final SeekBar brightness=(SeekBar) findViewById(R.id.seekBar1);
         final SeekBar contrast=(SeekBar) findViewById(R.id.seekBar2);
@@ -70,6 +87,12 @@ public class MainActivity extends AppCompatActivity {
         brightness.setOnSeekBarChangeListener(seekBarListener);
         contrast.setOnSeekBarChangeListener(seekBarListener);
         sharpening.setOnSeekBarChangeListener(seekBarListener);
+
+        streamLock.set(false);
+
+        TextView txtView = findViewById(R.id.textView3);
+        log.setTextView(txtView);
+        log.setActivity(MainActivity.this);
     }
 
 
@@ -107,11 +130,127 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(String... values) {
             super.onProgressUpdate(values);
-            //response received from server
-            Log.d("test", "response " + values[0]);
-            //process server response here....
-
         }
+    }
+
+    private void updateView(final ImageView imgView){
+        runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                if(imageStream != null && imageStream.size() > 0){
+                    //if(streamLock.compareAndSet(false, true)){
+                        imageTemp = imageStream.get(0);
+                        if(imageTemp.getProcessedBitmap() != null){
+                            //long timeStampStart, timeStampEnd;
+                            //timeStampStart = System.currentTimeMillis();
+
+                            DisplayHandler.DrawCanvas(imageTemp.getProcessedBitmap(), imgView);
+                            imageStream.remove(0);
+
+                            //timeStampEnd = System.currentTimeMillis();
+                            //Log.d("Pipeline:", " Time to process image: " + (timeStampEnd - timeStampStart) + " ms.");
+                            //txtView.setText("Time to process image: " + (timeStampEnd - timeStampStart) + " ms.");
+
+                        }
+                        //streamLock.set(false);
+                    //}
+                }
+            }
+        });
+    }
+
+    private void generateBitmaps(){
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                long timeStampStart, timeStampEnd;
+                ImageView imgView = findViewById(R.id.imageView1);
+                while(run){
+                    if(stream != null && stream.size() > 0){
+
+                        if(streamLock.compareAndSet(false, true)){
+                            if(stream.size() > 0){
+                                timeStampStart = System.currentTimeMillis();
+                                imageTemp = new PGMImage(generateColorsFromImageBytes(stream.remove(0)));
+                                pipeline.processImage(imageTemp);
+                                imageStream.add(imageTemp);
+                                log.addInput3("Amount in stream: " + stream.size());
+                                timeStampEnd = System.currentTimeMillis();
+                                log.addInput2(" Time to process image: " + (timeStampEnd - timeStampStart) + " ms.");
+                            }
+                            streamLock.set(false);
+                        }
+                        if(imageStream.size() > 0)
+                            updateView(imgView);
+                    }
+                }
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.setName("PIPELINE_THREAD");
+        thread.start();
+    }
+
+    private int[] generateColorsFromImageBytes(final byte[] imageData){
+        dataAsInt = new int[str_h*str_w];
+        t1 = generateColorsFromImagesBytesWithinRange(imageData, 0, 0, str_w, str_h/2, "GENERATE_COLORS_WORKER_1");
+        t2 = generateColorsFromImagesBytesWithinRange(imageData, 0, str_h/2, str_w, str_h, "GENERATE_COLORS_WORKER_2");
+        t1.start();
+        t2.start();
+        try {
+            t1.join();
+            t2.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        for(SubArray sb : subArrays){
+            addDataFromArray(dataAsInt, sb.getData(), sb.getStart(), sb.getLength());
+        }
+        subArrays.clear();
+        return dataAsInt;
+    }
+
+    private Thread generateColorsFromImagesBytesWithinRange(final byte[] imageData, final int wFrom, final int hFrom, final int wTo, final int hTo, final String threadName){
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                generateColorsFromImagesBytes(imageData, wFrom, hFrom, wTo, hTo);
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.setName(threadName);
+        return thread;
+    }
+
+    private void generateColorsFromImagesBytes(final byte[] imageData, int wFrom, int hFrom, int wTo, int hTo){
+        int length = (wTo-wFrom)*(hTo-hFrom);
+        int[] tempData = new int[length];
+        int temp = 0; highest = 0; b2 = 0; b3 = 0;
+        int dataIndex = (int)(hFrom*str_w*1.5);
+        for(int h=hFrom; h<hTo;h++)
+            for(int w=wFrom;w<wTo;w++){
+
+                if(dataIndex % 3 == 0){
+                    b1 = imageData[dataIndex] & 0xff; b2 = imageData[(dataIndex)+1] & 0xff; b3 = imageData[(dataIndex)+2] & 0xff;
+                    temp = ((b2 & 0xf) << 8) | b1;
+                    dataIndex += 1;
+                }else{
+                    temp = (b2 >> 4) | (b3 << 4);
+                    dataIndex += 2;
+                }
+                colorValue = (int)(((double)temp / 4095.0) * 255);
+                //array2d[h][w] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
+                tempData[((h-hFrom)*str_w) + (w-wFrom)] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
+                //if(temp > highest)
+                //highest = temp;
+            }
+        subArrays.add(new SubArray(tempData, (hFrom*str_w), length ));
+        //addDataFromArray(dataAsInt, tempData, (hFrom*str_w), tempData.length);
+    }
+
+    private void addDataFromArray(int[] arrayTo, int[] arrayFrom, int at, int length) {
+        System.arraycopy(arrayFrom, 0, arrayTo, at, length);
     }
 
 

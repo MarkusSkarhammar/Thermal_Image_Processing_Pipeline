@@ -39,31 +39,15 @@ public class SeekBarListener implements SeekBar.OnSeekBarChangeListener {
     }
 
     private void Brightness(int progress){
-        image.setBitmap(image.getProcessedBitmap().copy(image.getProcessedBitmap().getConfig(), true));
-        OpenCVHandler.ContrastAndBrightness(image.getBitmap(), image.getContrast(), progress);
-        OpenCVHandler.Sharpening(image.getBitmap(), image.getSharpening());
-        DisplayHandler.DrawCanvas(image.getBitmap(), view);
-
-        image.setBrightness(progress);
+        MainActivity.brightness = progress;
     }
 
     private void Contrast(int progress) {
-        image.setBitmap(image.getProcessedBitmap().copy(image.getProcessedBitmap().getConfig(), true));
-        OpenCVHandler.ContrastAndBrightness(image.getBitmap(), (double)(progress * 2)/100, image.getBrightness());
-        OpenCVHandler.Sharpening(image.getBitmap(), image.getSharpening());
-        DisplayHandler.DrawCanvas(image.getBitmap(), view);
-
-        image.setContrast((double)(progress * 2)/100);
+        MainActivity.contrast = (double)(progress * 2) / 100;
     }
 
     private void Sharpening(int progress) {
-        image.setBitmap(image.getProcessedBitmap().copy(image.getProcessedBitmap().getConfig(), true));
-        OpenCVHandler.ContrastAndBrightness(image.getBitmap(), image.getContrast(), image.getBrightness());
-
-        OpenCVHandler.Sharpening(image.getBitmap(), progress);
-        image.setSharpening(progress);
-
-        DisplayHandler.DrawCanvas(image.getBitmap(), view);
+        MainActivity.sharpening = progress;
 
     }
 }
