@@ -10,6 +10,8 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
@@ -47,10 +49,12 @@ public class MotionDetectionS {
         Mat currentFrame = new Mat (b.getWidth(), b.getHeight(), CV_8UC1);
         Utils.bitmapToMat(b, currentFrame);
 
+        Mat originalFrame = currentFrame;
+
         // Convert to grayscale. May not be necessary if image is already grayscale.
         Imgproc.cvtColor(currentFrame, currentFrame, Imgproc.COLOR_RGB2GRAY);
 
-        // Apply filter to reduce noise.
+        // Apply blur to reduce sensitivity. We don't want to register random noise.
         Imgproc.GaussianBlur(currentFrame, currentFrame, new Size(21, 21), 0);
 
         // Check if we have a valid background frame. If not, save one.
@@ -71,14 +75,35 @@ public class MotionDetectionS {
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         Imgproc.findContours(thresh, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
-        // If the number of contours exceeds a certain amount? Then we've detected motion.
-        for(int i = 0; i < contours.size(); ++i) {
+        Rect r;
+        // ArrayList<Rect> rect_array = new ArrayList<Rect>();
+
+        // Loop over the contours.
+        for (int i = 0; i < contours.size(); ++i) {
+
+            // If the number of contours exceeds a certain amount? Then we've detected motion.
+            // If the contour is too small? Ignore it.
+
+            /*
             if(Imgproc.contourArea(contours.get(i)) < 500) {
                 continue;
             }
+            */
 
-            System.out.println("Motion detected!!!");
+            double contourarea = Imgproc.contourArea(contours.get(i));
+
+            if (contourarea > 100) {
+                r = Imgproc.boundingRect(contours.get(i));
+                //rect_array.add(r);
+                Imgproc.rectangle(originalFrame, r, new Scalar(0,0, 255));
+            }
+
+            // System.out.println("Motion detected!!!");
 
         }
+
+        Utils.matToBitmap(originalFrame, b);
+        image.setProcessedBitmap(b);
+
     }
 }
