@@ -10,7 +10,8 @@ public class log {
     private static TextView output;
     private static Activity a;
     private static ArrayList<String> inputs = new ArrayList<>();
-    private static String o, o2, o3;
+    private static long getImageDataTime, processImageDataTime;
+    private static int amountInStream;
 
     public static void setTextView(final TextView tv){
         output = tv;
@@ -20,27 +21,24 @@ public class log {
         a = activity;
     }
 
-    public static void addInput(final String input){
-        o = input;
-        writeToOutputs();
+    public static void setGetImageDataTime(final long input){
+        getImageDataTime = input;
     }
 
-    public static void addInput2(final String input){
-        o2 = input;
-        writeToOutputs();
+    public static void setProcessImageDataTime(final long input){
+        processImageDataTime = input;
     }
 
-    public static void addInput3(final String input){
-        o3 = input;
-        writeToOutputs();
+    public static void setAmountInStream(final int input){
+        amountInStream = input;
     }
 
-    private static void writeToOutputs(){
+    public static void writeToOutputs(){
         a.runOnUiThread(new Runnable() {
 
             @Override
             public void run() {
-                output.setText(o + "\n" + o2 + "\n" + o3);
+                output.setText("Time to get image data: " +getImageDataTime + "\nTime to process image data: " + processImageDataTime +  "\nAmount in stream: " + amountInStream);
             }
         });
     }

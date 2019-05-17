@@ -49,12 +49,6 @@ public class Pipeline {
 
         OpenCVHandler.equalizeHist(image);
 
-        //timeStampEnd = System.currentTimeMillis();
-        //Log.d("Pipeline:", " Time for histogram equalization: " + (timeStampEnd - timeStampStart) + " ms.");
-
-
-        //timeStampStart = System.currentTimeMillis();
-
         OpenCVHandler.PixelCorrection(image.getProcessedBitmap());
 
         ContrastAndBrightness(image.getProcessedBitmap(), MainActivity.contrast, MainActivity.brightness);

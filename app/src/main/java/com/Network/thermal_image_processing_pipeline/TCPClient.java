@@ -61,9 +61,6 @@ public class TCPClient {
     public void StartReadingRawStream(){
         try {
 
-            //here you must put your computer's IP address.
-            InetAddress serverAddr = InetAddress.getByName(SERVER_IP);
-
             Log.d("TCP Client", "C: Connecting...");
 
             s = new Socket(SERVER_IP, SERVER_PORT);
@@ -73,18 +70,13 @@ public class TCPClient {
             try {
 
                 //sends the message to the server
-                //bufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(s.getOutputStream())), true);
                 bufferOut = new DataOutputStream(s.getOutputStream());
 
                 bufferIn = new DataInputStream( s.getInputStream() );
 
-                long timeStampStart, timeStampEnd, timeStampStart2, timeStampEnd2, timeStampStart3, timeStampEnd3, timeStampStart4, timeStampEnd4;
+                long timeStampStart, timeStampEnd;
 
-                int[][] array2d;
-
-                int[] dataAsInt;
-
-                int amountRead, temp = 0, highest = 0, b1, b2 = 0, b3 = 0, colorValue, dataIndex;
+                int amountRead;
 
                 byte[] message, ack = {0x24, 1, 0, 0, 0};
 
@@ -107,15 +99,8 @@ public class TCPClient {
                         bufferOut.write(message);
                     }
 
-                    //timeStampStart4 = System.currentTimeMillis();
-
                     doHeaderStuff();
 
-                    //timeStampEnd4 = System.currentTimeMillis();
-                    //Log.d("TCP Client:", " Time to do header stuff: " + (timeStampEnd4 - timeStampStart4) + " ms.");
-
-                    //timeStampStart3 = System.currentTimeMillis();
-                    //amountRead = 0;
                     rec_bytes = 0;
                     imageData = new byte[tot_bytes];
                     b = new byte[66000];
@@ -124,38 +109,8 @@ public class TCPClient {
                         addDataFromArray(imageData, b, rec_bytes, amountRead);
                         rec_bytes += amountRead;
                     }
-                    //timeStampEnd3 = System.currentTimeMillis();
-                    //log.addInput(" Time to get image data: " + (timeStampEnd3 - timeStampStart3) + " ms.");
-
-                    //timeStampStart2 = System.currentTimeMillis();
-
-                    //array2d = new int[str_h][str_w];
-                    /*dataAsInt = new int[str_h*str_w];
-                    temp = 0; highest = 0; b2 = 0; b3 = 0;
-                    dataIndex = 0;
-                    for(int h=0; h<str_h;h++)
-                        for(int w=0;w<str_w;w++){
-
-                            if(dataIndex % 3 == 0){
-                                b1 = imageData[dataIndex] & 0xff; b2 = imageData[(dataIndex)+1] & 0xff; b3 = imageData[(dataIndex)+2] & 0xff;
-                                temp = ((b2 & 0xf) << 8) | b1;
-                                dataIndex += 1;
-                            }else{
-                                temp = (b2 >> 4) | (b3 << 4);
-                                dataIndex += 2;
-                            }
-                            colorValue = (int)(((double)temp / 4095.0) * 255);
-                            //array2d[h][w] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
-                            dataAsInt[(h*str_w) + w] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
-                            //if(temp > highest)
-                                //highest = temp;
-                        }*/
-
-                    //timeStampEnd2 = System.currentTimeMillis();
-                    //log.addInput(" Time to process image data: " + (timeStampEnd2 - timeStampStart2) + " ms.");
 
                     if(MainActivity.stream.size() < 5){
-                        //PGMImage img = new PGMImage(dataAsInt);
                         MainActivity.stream.add(imageData);
                     }
 
@@ -163,12 +118,9 @@ public class TCPClient {
                     bufferOut.write(ack);
 
                     timeStampEnd = System.currentTimeMillis();
-                    log.addInput(" Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
-                    //Log.d("TCP Client:", " Time to get image: " + (timeStampEnd - timeStampStart) + " ms.");
-
+                    log.setGetImageDataTime(timeStampEnd-timeStampStart);
 
                 }
-                //Log.d("RESPONSE FROM SERVER", "S: Received Message: '" + serverMessage + "'");
 
                 }catch (Exception e) {
                 Log.e("TCP", "S: Error", e);
