@@ -34,6 +34,8 @@ public class MotionDetectionS {
      */
 
     private Mat backgroundFrame = null;
+    private long timeStampStart;
+    private final int BACKGROUND_RESET_TIME = 5;
 
     public MotionDetectionS() {
     }
@@ -49,7 +51,7 @@ public class MotionDetectionS {
         Mat currentFrame = new Mat (b.getWidth(), b.getHeight(), CV_8UC1);
         Utils.bitmapToMat(b, currentFrame);
 
-        Mat originalFrame = currentFrame;
+        Mat originalFrame = currentFrame.clone();
 
         // Convert to grayscale. May not be necessary if image is already grayscale.
         Imgproc.cvtColor(currentFrame, currentFrame, Imgproc.COLOR_RGB2GRAY);
@@ -58,7 +60,8 @@ public class MotionDetectionS {
         Imgproc.GaussianBlur(currentFrame, currentFrame, new Size(21, 21), 0);
 
         // Check if we have a valid background frame. If not, save one.
-        if (backgroundFrame == null) {
+        if (timeStampStart == 0 || (System.currentTimeMillis() - timeStampStart) > BACKGROUND_RESET_TIME * 1000) {
+            timeStampStart = System.currentTimeMillis();
             backgroundFrame = currentFrame;
         }
 
@@ -95,7 +98,7 @@ public class MotionDetectionS {
             if (contourarea > 100) {
                 r = Imgproc.boundingRect(contours.get(i));
                 //rect_array.add(r);
-                Imgproc.rectangle(originalFrame, r, new Scalar(0,0, 255));
+                Imgproc.rectangle(originalFrame, r, new Scalar(0, 255, 0));
             }
 
             // System.out.println("Motion detected!!!");
