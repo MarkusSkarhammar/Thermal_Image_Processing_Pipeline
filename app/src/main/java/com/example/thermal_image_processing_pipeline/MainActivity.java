@@ -180,30 +180,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private int[] generateColorsFromImageBytes(final byte[] imageData){
-        dataAsInt = new int[str_h*str_w];
-        for(int i = 0; i < AMOUNT_OF_THREADS_FOR_CONVERSION-1; i++){
-            subArrays.add(new SubArray(generateColorsFromImagesBytesWithinRange(
+
+        if(imageData != null) {
+            dataAsInt = new int[str_h*str_w];
+            for(int i = 0; i < AMOUNT_OF_THREADS_FOR_CONVERSION-1; i++){
+                subArrays.add(new SubArray(generateColorsFromImagesBytesWithinRange(
+                        imageData,
+                        0,
+                        0 + (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * i,
+                        str_w,
+                        (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * (i + 1),
+                        i)
+                ));
+            }
+
+            for(SubArray sb : subArrays)
+                sb.getT().start();
+
+            subArrays.add(new SubArray());
+            generateColorsFromImageBytes(
                     imageData,
                     0,
-                    0 + (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * i,
+                    0 + (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * (AMOUNT_OF_THREADS_FOR_CONVERSION-1),
                     str_w,
-                    (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * (i + 1),
-                    i)
-            ));
-        }
-
-        for(SubArray sb : subArrays)
-            sb.getT().start();
-
-        subArrays.add(new SubArray());
-        generateColorsFromImageBytes(
-                imageData,
-                0,
-                0 + (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * (AMOUNT_OF_THREADS_FOR_CONVERSION-1),
-                str_w,
-                str_h,
-                AMOUNT_OF_THREADS_FOR_CONVERSION-1
-        );
+                    str_h,
+                    AMOUNT_OF_THREADS_FOR_CONVERSION-1
+            );
 
         /*try {
             for(SubArray sb : subArrays){
@@ -215,21 +217,24 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }*/
 
-         while(isAlive){
-            isAlive = false;
-            for(SubArray sb : subArrays){
-                if(sb.getT() != null){
-                    if(!sb.getT().isAlive())
+            while(isAlive){
+                isAlive = false;
+                for(SubArray sb : subArrays){
+                    if(sb.getT() != null){
+                        if(!sb.getT().isAlive())
+                            addDataFromArray(dataAsInt, sb.getData(), sb.getStart(), sb.getLength());
+                        else
+                            isAlive = true;
+                    }else
                         addDataFromArray(dataAsInt, sb.getData(), sb.getStart(), sb.getLength());
-                    else
-                        isAlive = true;
-                }else
-                    addDataFromArray(dataAsInt, sb.getData(), sb.getStart(), sb.getLength());
+                }
             }
-        }
-        isAlive = true;
+            isAlive = true;
 
-        subArrays.clear();
+            subArrays.clear();
+
+        }
+
         return dataAsInt;
     }
 

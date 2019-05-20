@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.opencv.core.CvType.CV_8UC1;
+import static org.opencv.imgproc.Imgproc.COLORMAP_HOT;
+import static org.opencv.imgproc.Imgproc.COLORMAP_HSV;
+import static org.opencv.imgproc.Imgproc.COLORMAP_JET;
 
 public class MotionDetectionS {
 
@@ -48,7 +51,7 @@ public class MotionDetectionS {
 
         // Convert image to something OpenCV can handle.
         Bitmap b = DisplayHandler.generateBitmapFromPGM(image);
-        Mat currentFrame = new Mat (b.getWidth(), b.getHeight(), CV_8UC1);
+        Mat currentFrame = new Mat(b.getWidth(), b.getHeight(), CV_8UC1);
         Utils.bitmapToMat(b, currentFrame);
 
         Mat originalFrame = currentFrame.clone();
@@ -87,23 +90,18 @@ public class MotionDetectionS {
             // If the number of contours exceeds a certain amount? Then we've detected motion.
             // If the contour is too small? Ignore it.
 
-            /*
-            if(Imgproc.contourArea(contours.get(i)) < 500) {
-                continue;
-            }
-            */
-
-            double contourarea = Imgproc.contourArea(contours.get(i));
-
-            if (contourarea > 100) {
+            if (Imgproc.contourArea(contours.get(i)) > 500) {
                 r = Imgproc.boundingRect(contours.get(i));
                 //rect_array.add(r);
-                Imgproc.rectangle(originalFrame, r, new Scalar(0, 255, 0));
+                Imgproc.rectangle(originalFrame, r, new Scalar(0, 220, 0));
             }
 
             // System.out.println("Motion detected!!!");
 
         }
+
+        // Imgproc.cvtColor(originalFrame, originalFrame, Imgproc.COLOR_RGB2GRAY);
+        // Imgproc.applyColorMap(originalFrame, originalFrame, COLORMAP_JET);
 
         Utils.matToBitmap(originalFrame, b);
         image.setProcessedBitmap(b);
