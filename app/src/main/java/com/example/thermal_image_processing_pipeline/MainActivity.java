@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.Network.thermal_image_processing_pipeline.TCPClient;
 import com.log.log;
+import com.pipeline.thermal_image_processing_pipeline.MotionDetectionHOG;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionS;
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
 
@@ -153,7 +154,8 @@ public class MainActivity extends AppCompatActivity {
                 long timeStampStart, timeStampEnd;
                 ImageView imgView = findViewById(R.id.imageView1);
 
-                MotionDetectionS md = new MotionDetectionS();
+                // MotionDetectionS md = new MotionDetectionS();
+                MotionDetectionHOG md = new MotionDetectionHOG();
 
                 while(run){
                     if(stream != null && stream.size() > 0){
