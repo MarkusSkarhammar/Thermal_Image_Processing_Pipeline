@@ -149,6 +149,12 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
+                    <Switch
+                        android:id="@+id/sensorType"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="Sensor type" />
+
                     <TextView
                         android:id="@+id/thresholdText"
                         android:layout_width="match_parent"
