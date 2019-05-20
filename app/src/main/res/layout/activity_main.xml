@@ -162,6 +162,7 @@
                         android:orientation="horizontal">
 
                         <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/thresholdInput"
                             android:layout_width="309dp"
                             android:layout_height="wrap_content"
                             android:hint="Threshold" />
@@ -188,6 +189,7 @@
                         android:orientation="horizontal">
 
                         <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/contourInput"
                             android:layout_width="309dp"
                             android:layout_height="wrap_content"
                             android:hint="Contour" />

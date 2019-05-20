@@ -10,11 +10,14 @@ import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.Network.thermal_image_processing_pipeline.TCPClient;
+import com.google.android.material.textfield.TextInputEditText;
 import com.log.log;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionS;
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
@@ -44,6 +47,12 @@ public class MainActivity extends AppCompatActivity {
     final int AMOUNT_OF_THREADS_FOR_CONVERSION = 3;
 
     private boolean isAlive = true;
+
+    // Motion sensor stuff
+    private TextView threshold, contourArea;
+    private TextInputEditText thresholdInput, contourInput;
+    private final String THRESHOLD_TEXT = "Threshold value: ", CONTOURAREA_TEXT = "ContourArea value: ";
+    private static int threshold_value = 25, contourArea_value = 0;
 
 
     @Override
@@ -93,6 +102,36 @@ public class MainActivity extends AppCompatActivity {
         TextView txtView = findViewById(R.id.textView3);
         log.setTextView(txtView);
         log.setActivity(MainActivity.this);
+
+
+        // Setup motion sensor threshold and contour layout
+        {
+            threshold = findViewById(R.id.thresholdText);
+            threshold.setText(THRESHOLD_TEXT + threshold_value);
+            thresholdInput = findViewById(R.id.thresholdInput);
+            Button clickButton = findViewById(R.id.buttonThreshold);
+            clickButton.setOnClickListener( new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    updateThreshold();
+                }
+            });
+
+            contourArea = findViewById(R.id.contourAreaText);
+            contourArea.setText(CONTOURAREA_TEXT + contourArea_value);
+            contourInput = findViewById(R.id.contourInput);
+            clickButton = findViewById(R.id.buttonContour);
+            clickButton.setOnClickListener( new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    updateContourArea();
+                }
+            });
+        }
+
+
     }
 
 
@@ -273,5 +312,25 @@ public class MainActivity extends AppCompatActivity {
         System.arraycopy(arrayFrom, 0, arrayTo, at, length);
     }
 
+    public void updateThreshold(){
+        String s = "" + thresholdInput.getText();
+        try {
+            if(Integer.parseInt(s) != 0){
+                threshold.setText(THRESHOLD_TEXT + s);
+            }
+        }catch (NumberFormatException e){
+            thresholdInput.setText("");
+        }
+    }
 
+    public void updateContourArea(){
+        String s = "" + contourInput.getText();
+        try {
+            if(Integer.parseInt(s) != 0){
+                contourArea.setText(CONTOURAREA_TEXT + s);
+            }
+        }catch (NumberFormatException e){
+            contourInput.setText("");
+        }
+    }
 }
