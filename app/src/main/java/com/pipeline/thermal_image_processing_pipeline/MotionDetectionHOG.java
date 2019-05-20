@@ -42,15 +42,17 @@ public class MotionDetectionHOG {
         // Convert to grayscale. May not be necessary if image is already grayscale.
         Imgproc.cvtColor(currentFrame, currentFrame, Imgproc.COLOR_RGB2GRAY);
 
+        // Initialize HOG person detector.
         HOGDescriptor hog = new HOGDescriptor();
-
         hog.setSVMDetector(HOGDescriptor.getDefaultPeopleDetector());
-        
+
+        // Detect people in the image.
         MatOfRect foundLocations = new MatOfRect();
         MatOfDouble foundWeights = new MatOfDouble();
 
         hog.detectMultiScale(currentFrame, foundLocations, foundWeights);
 
+        // Draw the boxes.
         Rect[] facesArray = foundLocations.toArray();
         for (int i = 0; i < facesArray.length; i++) {
             Imgproc.rectangle(currentFrame, facesArray[i].tl(), facesArray[i].br(), new Scalar(100), 3);
