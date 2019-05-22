@@ -5,8 +5,6 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,37 +23,41 @@ import com.pipeline.thermal_image_processing_pipeline.MotionDetectionS;
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
 
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity {
-    private PGMImage img = null;
+
+    // General variables for streaming
+    private PGMImage imageTemp;
+
     private Pipeline pipeline = null;
+
     private TCPClient tcpClient;
+
     public static ArrayList<byte[]> stream = new ArrayList<>();
     private ArrayList<PGMImage> imageStream = new ArrayList<>();
     private ArrayList<SubArray> subArrays = new ArrayList<>();
-    private PGMImage imageTemp;
+
     private boolean run = true;
-    private AtomicBoolean streamLock = new AtomicBoolean();
-
-    public static int brightness = 0;
-    public static double contrast = 1.0;
-    public static int sharpening = 0;
-
-    public static int str_w = 0,  str_h = 0;
 
     private int[] dataAsInt;
 
-    final int AMOUNT_OF_THREADS_FOR_CONVERSION = 3;
+    // Values for image manipulation.
+    public static int brightness = 0, sharpening = 0;
+    public static double contrast = 1.0;
 
+    // Image pixels for width and height.
+    public static int str_w = 0,  str_h = 0;
+
+    // Data conversion threads' stuff.
+    int AMOUNT_OF_THREADS_FOR_CONVERSION = 3;
     private boolean isAlive = true;
 
-    // Motion sensor stuff
+    // Motion sensor stuff.
     private TextView threshold, contourArea;
     private TextInputEditText thresholdInput, contourInput;
     private Switch sensorTypeSwitch;
     private final String THRESHOLD_TEXT = "Threshold value: ", CONTOURAREA_TEXT = "ContourArea value: ";
-    public static int threshold_value = 25, contourArea_value = 0;
+    public static int threshold_value = 25, contourArea_value = 500;
     public static boolean sensorType = false;
 
 
@@ -88,25 +90,31 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Setup device for use.
+     */
     private void init(){
         pipeline = new Pipeline(MainActivity.this, 384, 288);
-        ImageView imgView = findViewById(R.id.imageView1);
 
-        final SeekBar brightness=(SeekBar) findViewById(R.id.seekBar1);
-        final SeekBar contrast=(SeekBar) findViewById(R.id.seekBar2);
-        final SeekBar sharpening=(SeekBar) findViewById(R.id.seekBar3);
 
-        SeekBarListener seekBarListener = new SeekBarListener(img, imgView);
-        brightness.setOnSeekBarChangeListener(seekBarListener);
-        contrast.setOnSeekBarChangeListener(seekBarListener);
-        sharpening.setOnSeekBarChangeListener(seekBarListener);
+        // Setup seekBars
+        {
+            final SeekBar brightness = findViewById(R.id.seekBar1);
+            final SeekBar contrast = findViewById(R.id.seekBar2);
+            final SeekBar sharpening = findViewById(R.id.seekBar3);
 
-        streamLock.set(false);
+            SeekBarListener seekBarListener = new SeekBarListener();
+            brightness.setOnSeekBarChangeListener(seekBarListener);
+            contrast.setOnSeekBarChangeListener(seekBarListener);
+            sharpening.setOnSeekBarChangeListener(seekBarListener);
+        }
 
-        TextView txtView = findViewById(R.id.textView3);
-        log.setTextView(txtView);
-        log.setActivity(MainActivity.this);
-
+        // Setup log
+        {
+            TextView txtView = findViewById(R.id.textView3);
+            log.setTextView(txtView);
+            log.setActivity(MainActivity.this);
+        }
 
         // Setup motion sensor threshold and contour layout
         {
@@ -144,6 +152,9 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        // Setup variables for the data conversion worker threads
+        AMOUNT_OF_THREADS_FOR_CONVERSION = Runtime.getRuntime().availableProcessors();
+
 
     }
 
@@ -155,49 +166,9 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
 
-    public class ConnectTask extends AsyncTask<String, String, TCPClient> {
-
-        @Override
-        protected TCPClient doInBackground(String... message) {
-
-            //we create a TCPClient object
-            tcpClient = new TCPClient(new TCPClient.OnMessageReceived() {
-                @Override
-                //here the messageReceived method is implemented
-                public void messageReceived(String message) {
-                    publishProgress(message);
-                }
-            });
-            tcpClient.StartReadingRawStream();
-
-            Log.d("TCP Client", "Session ended.");
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
-        }
-    }
-
-    private void updateView(final ImageView imgView){
-        runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                if(imageStream != null && imageStream.size() > 0){
-                    imageTemp = imageStream.get(0);
-                    if(imageTemp.getProcessedBitmap() != null){
-                        DisplayHandler.DrawCanvas(imageTemp.getProcessedBitmap(), imgView);
-                        imageStream.remove(0);
-                        log.setAmountInStream(stream.size());
-                        log.writeToOutputs();
-                    }
-                }
-            }
-        });
-    }
-
+    /**
+     * Startup of thread used for converting raw data to images.
+     */
     private void generateBitmaps(){
         Runnable runnable = new Runnable() {
             @Override
@@ -236,8 +207,14 @@ public class MainActivity extends AppCompatActivity {
         thread.start();
     }
 
+    /**
+     * Convert a frame's image data from raw data to an array of int.
+     * @param imageData The frame's pixel data.
+     * @return Processed data as an int array;
+     */
     private int[] generateColorsFromImageBytes(final byte[] imageData){
 
+        // Generate an amount of thread.
         if(imageData != null) {
             dataAsInt = new int[str_h*str_w];
             for(int i = 0; i < AMOUNT_OF_THREADS_FOR_CONVERSION-1; i++){
@@ -251,9 +228,11 @@ public class MainActivity extends AppCompatActivity {
                 ));
             }
 
+            // Start the threads.
             for(SubArray sb : subArrays)
                 sb.getT().start();
 
+            // Set this thread to also do a part of the conversion.
             subArrays.add(new SubArray());
             generateColorsFromImageBytes(
                     imageData,
@@ -264,16 +243,7 @@ public class MainActivity extends AppCompatActivity {
                     AMOUNT_OF_THREADS_FOR_CONVERSION-1
             );
 
-        /*try {
-            for(SubArray sb : subArrays){
-                if(sb.getT() != null)
-                    sb.getT().join();
-                addDataFromArray(dataAsInt, sb.getData(), sb.getStart(), sb.getLength());
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
-
+            // Merge all the different sub arrays of int into the final int array. Also make sure the threads are dead.
             while(isAlive){
                 isAlive = false;
                 for(SubArray sb : subArrays){
@@ -286,8 +256,8 @@ public class MainActivity extends AppCompatActivity {
                         addDataFromArray(dataAsInt, sb.getData(), sb.getStart(), sb.getLength());
                 }
             }
+            // Reset state.
             isAlive = true;
-
             subArrays.clear();
 
         }
@@ -295,6 +265,16 @@ public class MainActivity extends AppCompatActivity {
         return dataAsInt;
     }
 
+    /**
+     * Generate a thread with which to convert a section of the raw image data to an int array.
+     * @param imageData The raw frame data.
+     * @param wFrom Star width position.
+     * @param hFrom Start height position.
+     * @param wTo End width position.
+     * @param hTo End height position.
+     * @param threadName Name of the thread.
+     * @return The generated thread.
+     */
     private Thread generateColorsFromImagesBytesWithinRange(final byte[] imageData, final int wFrom, final int hFrom, final int wTo, final int hTo, final int threadName){
         Runnable runnable = new Runnable() {
             @Override
@@ -307,12 +287,21 @@ public class MainActivity extends AppCompatActivity {
         return thread;
     }
 
+    /**
+     * Conver a section of the raw frame data into an array of int.
+     * @param imageData The raw frame data.
+     * @param wFrom Star width position.
+     * @param hFrom Start height position.
+     * @param wTo End width position.
+     * @param hTo End height position.
+     */
     private void generateColorsFromImageBytes(final byte[] imageData, int wFrom, int hFrom, int wTo, int hTo, final int pos){
-        SubArray sbTemp;
+        SubArray sbTemp = subArrays.get(pos);
         int length = (wTo-wFrom)*(hTo-hFrom);
         int[] tempData = new int[length];
         int temp, b1, b2 = 0, b3 = 0, colorValue;
         int dataIndex = (int)(hFrom*str_w*1.5);
+
         for(int h=hFrom; h<hTo;h++)
             for(int w=wFrom;w<wTo;w++){
 
@@ -327,15 +316,25 @@ public class MainActivity extends AppCompatActivity {
                 colorValue = (int)(((double)temp / 4095.0) * 255);
                 tempData[((h-hFrom)*str_w) + (w-wFrom)] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
             }
-        sbTemp = subArrays.get(pos);
-        sbTemp.setAll(tempData,(hFrom*str_w), length );
+
+        sbTemp.setAll(tempData,(hFrom*str_w), length);
     }
 
+    /**
+     * Copy an array into another.
+     * @param arrayTo Destination array.
+     * @param arrayFrom Source array.
+     * @param at Start at position.
+     * @param length Length of the data to copy.
+     */
     private void addDataFromArray(int[] arrayTo, int[] arrayFrom, int at, int length) {
         System.arraycopy(arrayFrom, 0, arrayTo, at, length);
     }
 
-    public void updateThreshold(){
+    /**
+     * Change the motion sensor's threshold value.
+     */
+    private void updateThreshold(){
         String s = "" + thresholdInput.getText();
         try {
             if(Integer.parseInt(s) != 0){
@@ -347,7 +346,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void updateContourArea(){
+    /**
+     * Change the motion sensor's contour area value.
+     */
+    private void updateContourArea(){
         String s = "" + contourInput.getText();
         try {
             if(Integer.parseInt(s) != 0){
@@ -359,7 +361,54 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Switch from motion sensor to human detection sensor (or vice versa).
+     */
     private void changeSensor(){
         sensorType = !sensorType;
+    }
+
+    /**
+     * Send a task for the UI thread.
+     * @param imgView The imageView to be updated.
+     */
+    private void updateView(final ImageView imgView){
+        runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                if(imageStream != null && imageStream.size() > 0){
+                    imageTemp = imageStream.get(0);
+                    if(imageTemp.getProcessedBitmap() != null){
+                        DisplayHandler.DrawCanvas(imageTemp.getProcessedBitmap(), imgView);
+                        imageStream.remove(0);
+                        log.setAmountInStream(stream.size());
+                        log.writeToOutputs();
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Asynchronous task for TCP connection.
+     */
+    private class ConnectTask extends AsyncTask<String, String, TCPClient> {
+
+        @Override
+        protected TCPClient doInBackground(String... message) {
+
+            //we create a TCPClient object
+            tcpClient = new TCPClient();
+            tcpClient.StartReadingRawStream();
+
+            Log.d("TCP Client", "Session ended.");
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+        }
     }
 }

@@ -1,49 +1,29 @@
 package com.Network.thermal_image_processing_pipeline;
 
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.os.health.TimerStat;
 import android.util.Log;
-import android.widget.TextView;
 
-import com.example.thermal_image_processing_pipeline.DisplayHandler;
+
 import com.example.thermal_image_processing_pipeline.MainActivity;
-import com.example.thermal_image_processing_pipeline.PGMImage;
-import com.example.thermal_image_processing_pipeline.R;
 import com.log.log;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.Socket;
 
-import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class TCPClient {
 
     // useful variables
-    private int str_w = 0,  str_h = 0, str_frm_nbr, str_exposure, str_timestamp_sec, str_timestamp_usec, str_format, num_pix, rec_bytes, tot_bytes = 0, lol;
+    private int str_frm_nbr, str_exposure, str_timestamp_sec, str_timestamp_usec, str_format, num_pix, rec_bytes, tot_bytes = 0, lol;
     private double bytes_per_pix = 0;
     private byte[] b, imageData;
-    private Color c = new Color();
 
     private Socket s;
     private final int SERVER_PORT = 1234;
     private final String SERVER_IP = "192.168.0.90";
-
-    // message to send to the server
-    private String serverMessage;
 
     // used to send messages
     private DataOutputStream bufferOut;
@@ -51,13 +31,13 @@ public class TCPClient {
     // used to read messages from the server
     private DataInputStream bufferIn;
 
-    // sends message received notifications
-    private OnMessageReceived messageListener = null;
+    public TCPClient(){
 
-    public TCPClient(OnMessageReceived listener){
-        messageListener = listener;
     }
 
+    /**
+     * Start stream.
+     */
     public void StartReadingRawStream(){
         try {
 
@@ -69,9 +49,10 @@ public class TCPClient {
 
             try {
 
-                //sends the message to the server
+                // To the server
                 bufferOut = new DataOutputStream(s.getOutputStream());
 
+                // From the server
                 bufferIn = new DataInputStream( s.getInputStream() );
 
                 long timeStampStart, timeStampEnd;
@@ -132,25 +113,8 @@ public class TCPClient {
     }
 
     /**
-     * Sends the message entered by client to the server
-     *
-     * @param message text entered by client
+     * Stop the stream;
      */
-    public void sendMessage(final String message) {
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                /*if (bufferOut != null) {
-                    Log.d("", "Sending: " + message);
-                    bufferOut.println(message);
-                    bufferOut.flush();
-                }*/
-            }
-        };
-        Thread thread = new Thread(runnable);
-        thread.start();
-    }
-
     public void StopReadingRawStream(){
         try {
             s.close();
@@ -161,16 +125,18 @@ public class TCPClient {
         }
     }
 
-    //Declare the interface. The method messageReceived(String message) will must be implemented in the Activity
-    //class at on AsyncTask doInBackground
-    public interface OnMessageReceived {
-        public void messageReceived(String message);
-    }
-
+    /**
+     * Convert byte array to int.
+     * @param bytes The data.
+     * @return An int.
+     */
     private int fromByteArray(byte[] bytes) {
         return bytes[3] << 24 | (bytes[2] & 0xFF) << 16 | (bytes[1] & 0xFF) << 8 | (bytes[0] & 0xFF);
     }
 
+    /**
+     * Process header data from the server.
+     */
     private void doHeaderStuff() throws Exception {
         b = new byte[5];
 
@@ -232,6 +198,13 @@ public class TCPClient {
             throw new Exception("ERROR: tot_bytes != num_pix");
     }
 
+    /**
+     * Copy an array into another.
+     * @param arrayTo Destination array.
+     * @param arrayFrom Source array.
+     * @param at Start at position.
+     * @param length Length of the data to copy.
+     */
     private void addDataFromArray(byte[] arrayTo, byte[] arrayFrom, int at, int length) {
         System.arraycopy(arrayFrom, 0, arrayTo, at, length);
     }

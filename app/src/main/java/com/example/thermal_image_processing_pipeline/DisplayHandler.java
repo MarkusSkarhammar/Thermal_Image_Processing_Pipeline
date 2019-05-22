@@ -12,8 +12,10 @@ import java.util.ArrayList;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 
+/**
+ * Class for handling display actions.
+ */
 public class DisplayHandler {
-    private static int[] pixels;
 
     public static Bitmap generateBitmapFromPGM(PGMImage image){
 

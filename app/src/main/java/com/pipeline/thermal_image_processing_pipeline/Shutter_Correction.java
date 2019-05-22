@@ -15,6 +15,7 @@ public class Shutter_Correction {
      * @param gain The camera sensors' gain correction data.
      */
     public void applyShutterAndGain(PGMImage image, final float[][] gain){
+        /*
         int[][] data = image.getData();
         float temp;
         for(int y = 0; y < image.getHeight(); ++y){
@@ -23,6 +24,7 @@ public class Shutter_Correction {
                data[y][x] = (int)((temp));
             }
         }
+        */
     }
 
     /**
@@ -30,8 +32,10 @@ public class Shutter_Correction {
      * @param shutterImage The shutter image.
      */
     public void getShutterValues(PGMImage shutterImage){
+        /*
         shutterValues = shutterImage.getData();
         mean = mean(shutterValues, shutterImage);
+        */
     }
 
     /**

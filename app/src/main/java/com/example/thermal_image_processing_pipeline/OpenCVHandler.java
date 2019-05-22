@@ -1,18 +1,23 @@
 package com.example.thermal_image_processing_pipeline;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.photo.Photo;
 
 import static org.opencv.core.CvType.CV_16SC1;
 import static org.opencv.core.CvType.CV_8UC1;
 
+/**
+ * Class for handling OpenCv processing.
+ */
 public class OpenCVHandler {
 
+    /**
+     * Apply equalize histogram on the image.
+     * @param img The image to be processed.
+     */
     public static void equalizeHist(PGMImage img) {
 
         Bitmap b = DisplayHandler.generateBitmapFromPGM(img);
@@ -21,6 +26,7 @@ public class OpenCVHandler {
         Utils.bitmapToMat(b, src);
         Imgproc.cvtColor(src, src, Imgproc.COLOR_RGB2GRAY);
 
+        // This is too slow!
         //Photo.fastNlMeansDenoising(src, src);
 
         Imgproc.createCLAHE(3).apply(src, src);
@@ -34,6 +40,12 @@ public class OpenCVHandler {
         img.setProcessedBitmap(b);
     }
 
+    /**
+     * Apply contrast and brightness.
+     * @param b The bitmap to be processed.
+     * @param contrast The contrast value.
+     * @param brightness The brightness value.
+     */
     public static void ContrastAndBrightness(Bitmap b,  double contrast, int brightness){
 
         Mat src = new Mat (b.getWidth(), b.getHeight(), CV_8UC1);
@@ -42,6 +54,10 @@ public class OpenCVHandler {
         Utils.matToBitmap(src, b);
     }
 
+    /**
+     * Apply pixel correction on a bitmap.
+     * @param b The bitmap to be processed.
+     */
     public static void PixelCorrection(Bitmap b){
         Mat src = new Mat(b.getWidth(), b.getHeight(), CV_8UC1);
         Utils.bitmapToMat(b, src);
@@ -50,6 +66,11 @@ public class OpenCVHandler {
 
     }
 
+    /**
+     * Apply sharpness on a bitmap.
+     * @param b The bitmap ro be processed.
+     * @param progress The mode of sharpening.
+     */
     public static void Sharpening(Bitmap b, int progress){
         if(progress != 0){
             Mat array = new Mat(3, 3, CV_16SC1);

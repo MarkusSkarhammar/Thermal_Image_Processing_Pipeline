@@ -98,7 +98,7 @@ public final class PGMIO {
                     image[j][i] = p;
                 }
             }
-            return new PGMImage(image, max);
+            return new PGMImage(new int[1]);
         } finally {
             stream.close();
         }

@@ -1,5 +1,8 @@
 package com.example.thermal_image_processing_pipeline;
 
+/**
+ * Container class for the sub arrays. Used in the conversion of raw data to an int array.
+ */
 public class SubArray {
     private int[] data;
     private int start, length;
@@ -32,17 +35,5 @@ public class SubArray {
 
     public Thread getT() {
         return t;
-    }
-
-    public void setData(int[] data) {
-        this.data = data;
-    }
-
-    public void setStart(int start) {
-        this.start = start;
-    }
-
-    public void setLength(int length) {
-        this.length = length;
     }
 }
