@@ -205,8 +205,8 @@ public class MainActivity extends AppCompatActivity {
                 long timeStampStart, timeStampEnd;
                 ImageView imgView = findViewById(R.id.imageView1);
 
-                // MotionDetectionS md = new MotionDetectionS();
-                MotionDetectionHOG md = new MotionDetectionHOG();
+                MotionDetectionS mdS = new MotionDetectionS();
+                MotionDetectionHOG mdHOG = new MotionDetectionHOG();
 
                 while(run){
                     if(stream != null && stream.size() > 0){
@@ -218,7 +218,11 @@ public class MainActivity extends AppCompatActivity {
                             timeStampEnd = System.currentTimeMillis();
                             log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
-                            md.detect(imageTemp);
+                            if (MainActivity.sensorType == false) {
+                                mdS.detect(imageTemp);
+                            } else {
+                                mdHOG.detect(imageTemp);
+                            }
 
                         }
                         if(imageStream.size() > 0)
