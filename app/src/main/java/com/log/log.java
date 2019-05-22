@@ -6,6 +6,9 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+/**
+ * Custom class for displaying something onto a textView.
+ */
 public class log {
     private static TextView output;
     private static Activity a;
