@@ -10,12 +10,18 @@ import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.Network.thermal_image_processing_pipeline.TCPClient;
+import com.google.android.material.textfield.TextInputEditText;
 import com.log.log;
+import com.pipeline.thermal_image_processing_pipeline.MotionDetectionHOG;
+import com.pipeline.thermal_image_processing_pipeline.MotionDetectionS;
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
 
 import java.util.ArrayList;
@@ -43,6 +49,14 @@ public class MainActivity extends AppCompatActivity {
     final int AMOUNT_OF_THREADS_FOR_CONVERSION = 3;
 
     private boolean isAlive = true;
+
+    // Motion sensor stuff
+    private TextView threshold, contourArea;
+    private TextInputEditText thresholdInput, contourInput;
+    private Switch sensorTypeSwitch;
+    private final String THRESHOLD_TEXT = "Threshold value: ", CONTOURAREA_TEXT = "ContourArea value: ";
+    public static int threshold_value = 25, contourArea_value = 0;
+    public static boolean sensorType = false;
 
 
     @Override
@@ -92,6 +106,45 @@ public class MainActivity extends AppCompatActivity {
         TextView txtView = findViewById(R.id.textView3);
         log.setTextView(txtView);
         log.setActivity(MainActivity.this);
+
+
+        // Setup motion sensor threshold and contour layout
+        {
+            threshold = findViewById(R.id.thresholdText);
+            threshold.setText(THRESHOLD_TEXT + threshold_value);
+            thresholdInput = findViewById(R.id.thresholdInput);
+            Button clickButton = findViewById(R.id.buttonThreshold);
+            clickButton.setOnClickListener( new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    updateThreshold();
+                }
+            });
+
+            contourArea = findViewById(R.id.contourAreaText);
+            contourArea.setText(CONTOURAREA_TEXT + contourArea_value);
+            contourInput = findViewById(R.id.contourInput);
+            clickButton = findViewById(R.id.buttonContour);
+            clickButton.setOnClickListener( new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    updateContourArea();
+                }
+            });
+
+            sensorTypeSwitch = findViewById(R.id.sensorType);
+            sensorTypeSwitch.setOnClickListener( new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    changeSensor();
+                }
+            });
+        }
+
+
     }
 
 
@@ -151,6 +204,10 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 long timeStampStart, timeStampEnd;
                 ImageView imgView = findViewById(R.id.imageView1);
+
+                MotionDetectionS mdS = new MotionDetectionS();
+                MotionDetectionHOG mdHOG = new MotionDetectionHOG();
+
                 while(run){
                     if(stream != null && stream.size() > 0){
                         if(stream.size() > 0){
@@ -160,6 +217,13 @@ public class MainActivity extends AppCompatActivity {
                             imageStream.add(imageTemp);
                             timeStampEnd = System.currentTimeMillis();
                             log.setProcessImageDataTime(timeStampEnd-timeStampStart);
+
+                            if (MainActivity.sensorType == false) {
+                                mdS.detect(imageTemp);
+                            } else {
+                                mdHOG.detect(imageTemp);
+                            }
+
                         }
                         if(imageStream.size() > 0)
                             updateView(imgView);
@@ -173,30 +237,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private int[] generateColorsFromImageBytes(final byte[] imageData){
-        dataAsInt = new int[str_h*str_w];
-        for(int i = 0; i < AMOUNT_OF_THREADS_FOR_CONVERSION-1; i++){
-            subArrays.add(new SubArray(generateColorsFromImagesBytesWithinRange(
+
+        if(imageData != null) {
+            dataAsInt = new int[str_h*str_w];
+            for(int i = 0; i < AMOUNT_OF_THREADS_FOR_CONVERSION-1; i++){
+                subArrays.add(new SubArray(generateColorsFromImagesBytesWithinRange(
+                        imageData,
+                        0,
+                        0 + (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * i,
+                        str_w,
+                        (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * (i + 1),
+                        i)
+                ));
+            }
+
+            for(SubArray sb : subArrays)
+                sb.getT().start();
+
+            subArrays.add(new SubArray());
+            generateColorsFromImageBytes(
                     imageData,
                     0,
-                    0 + (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * i,
+                    0 + (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * (AMOUNT_OF_THREADS_FOR_CONVERSION-1),
                     str_w,
-                    (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * (i + 1),
-                    i)
-            ));
-        }
-
-        for(SubArray sb : subArrays)
-            sb.getT().start();
-
-        subArrays.add(new SubArray());
-        generateColorsFromImageBytes(
-                imageData,
-                0,
-                0 + (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * (AMOUNT_OF_THREADS_FOR_CONVERSION-1),
-                str_w,
-                str_h,
-                AMOUNT_OF_THREADS_FOR_CONVERSION-1
-        );
+                    str_h,
+                    AMOUNT_OF_THREADS_FOR_CONVERSION-1
+            );
 
         /*try {
             for(SubArray sb : subArrays){
@@ -208,21 +274,24 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }*/
 
-         while(isAlive){
-            isAlive = false;
-            for(SubArray sb : subArrays){
-                if(sb.getT() != null){
-                    if(!sb.getT().isAlive())
+            while(isAlive){
+                isAlive = false;
+                for(SubArray sb : subArrays){
+                    if(sb.getT() != null){
+                        if(!sb.getT().isAlive())
+                            addDataFromArray(dataAsInt, sb.getData(), sb.getStart(), sb.getLength());
+                        else
+                            isAlive = true;
+                    }else
                         addDataFromArray(dataAsInt, sb.getData(), sb.getStart(), sb.getLength());
-                    else
-                        isAlive = true;
-                }else
-                    addDataFromArray(dataAsInt, sb.getData(), sb.getStart(), sb.getLength());
+                }
             }
-        }
-        isAlive = true;
+            isAlive = true;
 
-        subArrays.clear();
+            subArrays.clear();
+
+        }
+
         return dataAsInt;
     }
 
@@ -266,5 +335,31 @@ public class MainActivity extends AppCompatActivity {
         System.arraycopy(arrayFrom, 0, arrayTo, at, length);
     }
 
+    public void updateThreshold(){
+        String s = "" + thresholdInput.getText();
+        try {
+            if(Integer.parseInt(s) != 0){
+                threshold.setText(THRESHOLD_TEXT + s);
+                threshold_value = Integer.parseInt(s);
+            }
+        }catch (NumberFormatException e){
+            thresholdInput.setText("");
+        }
+    }
 
+    public void updateContourArea(){
+        String s = "" + contourInput.getText();
+        try {
+            if(Integer.parseInt(s) != 0){
+                contourArea.setText(CONTOURAREA_TEXT + s);
+                contourArea_value = Integer.parseInt(s);
+            }
+        }catch (NumberFormatException e){
+            contourInput.setText("");
+        }
+    }
+
+    private void changeSensor(){
+        sensorType = !sensorType;
+    }
 }

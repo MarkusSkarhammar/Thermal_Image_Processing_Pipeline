@@ -144,10 +144,71 @@
 
                 </HorizontalScrollView>
 
-                <com.jjoe64.graphview.GraphView
-                    android:id="@+id/graph1"
-                    android:layout_width="390dp"
-                    android:layout_height="191dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <Switch
+                        android:id="@+id/sensorType"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="Sensor type" />
+
+                    <TextView
+                        android:id="@+id/thresholdText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Threshold Value: 0" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minWidth="50dp"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/thresholdInput"
+                            android:layout_width="309dp"
+                            android:layout_height="wrap_content"
+                            android:hint="Threshold" />
+
+                        <Button
+                            android:id="@+id/buttonThreshold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Change"
+                            android:visibility="visible" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/contourAreaText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="ContourArea Value: 0" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:minWidth="50dp"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/contourInput"
+                            android:layout_width="309dp"
+                            android:layout_height="wrap_content"
+                            android:hint="Contour" />
+
+                        <Button
+                            android:id="@+id/buttonContour"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Change"
+                            android:visibility="visible" />
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
         </ScrollView>
 
