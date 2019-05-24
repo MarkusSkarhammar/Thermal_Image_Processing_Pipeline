@@ -98,7 +98,7 @@ public final class PGMIO {
                     image[j][i] = p;
                 }
             }
-            return new PGMImage(new int[1]);
+            return new PGMImage(new int[1], new int[1]);
         } finally {
             stream.close();
         }
@@ -161,7 +161,6 @@ public final class PGMIO {
      * Writes a grayscale image to a file in PGM format.
      * @param image a two-dimensional byte array representation of the image
      * @param file the file to write to
-     * @throws IllegalArgumentException
      * @throws IOException
      */
     public static void write(final int[][] image, final File file) throws IOException {
@@ -173,7 +172,6 @@ public final class PGMIO {
      * @param image a two-dimensional byte array representation of the image
      * @param file the file to write to
      * @param maxval the maximum gray value
-     * @throws IllegalArgumentException
      * @throws IOException
      */
     public static void write(final int[][] image, final File file, final int maxval) throws IOException {

@@ -11,16 +11,17 @@ import java.util.ArrayList;
 public class PGMImage {
     private int width, height, maxValue;
     private Bitmap processedBitmap = null;
-    private int[] dataList;
+    private int[] dataList, dataListRaw;
 
     /**
      *
      * @param dataList The raw image data.
      */
-    public PGMImage(int[] dataList){
+    public PGMImage(int[] dataList, int[] dataListRaw){
         this.width = 384;
         this.height = 288;
         this.dataList = dataList;
+        this.dataListRaw = dataListRaw;
     }
 
     public int getWidth() { return width; }
@@ -39,5 +40,9 @@ public class PGMImage {
 
     public int[] getDataList() {
         return dataList;
+    }
+
+    public int[] getDataListRaw() {
+        return dataListRaw;
     }
 }
