@@ -196,14 +196,14 @@ public final class PGMIO {
 
                     final int p = image[i][j];
 
-                    if (maxval < 256) {     // One byte will fit .
+                    if (maxval < 256) {     // One byte will fit.
                         stream.write(p);
-                    } else {                // Two bytes necessary
+                    } else {                // Two bytes necessary.
                         if (p < 256) {      // Check if padding is needed.
                             stream.write(0x0);
                             stream.write(p & 0xFF);
                         } else {
-                            stream.write((p & 0xFF00) >> 8);
+                            stream.write((p & 0xFF00) >> 8);    // Most significant byte first.
                             stream.write(p & 0xFF);
                         }
                     }
