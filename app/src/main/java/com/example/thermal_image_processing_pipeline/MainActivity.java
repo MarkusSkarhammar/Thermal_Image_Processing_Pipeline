@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean run = true;
 
-    private int[] dataAsInt;
+    private int[] dataAsInt, dataRawAsInt;
 
     // Values for image manipulation.
     public static int brightness = 0, sharpening = 0;
@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                     if(stream != null && stream.size() > 0){
                         if(stream.size() > 0){
                             timeStampStart = System.currentTimeMillis();
-                            imageTemp = new PGMImage(generateColorsFromImageBytes(stream.remove(0)));
+                            imageTemp = generateColorsFromImageBytes(stream.remove(0));
                             pipeline.processImage(imageTemp);
                             imageStream.add(imageTemp);
                             timeStampEnd = System.currentTimeMillis();
@@ -212,11 +212,12 @@ public class MainActivity extends AppCompatActivity {
      * @param imageData The frame's pixel data.
      * @return Processed data as an int array;
      */
-    private int[] generateColorsFromImageBytes(final byte[] imageData){
+    private PGMImage generateColorsFromImageBytes(final byte[] imageData){
 
         // Generate an amount of thread.
         if(imageData != null) {
             dataAsInt = new int[str_h*str_w];
+            dataRawAsInt = new int[str_h*str_w];
             for(int i = 0; i < AMOUNT_OF_THREADS_FOR_CONVERSION-1; i++){
                 subArrays.add(new SubArray(generateColorsFromImagesBytesWithinRange(
                         imageData,
@@ -248,12 +249,16 @@ public class MainActivity extends AppCompatActivity {
                 isAlive = false;
                 for(SubArray sb : subArrays){
                     if(sb.getT() != null){
-                        if(!sb.getT().isAlive())
+                        if(!sb.getT().isAlive()){
                             addDataFromArray(dataAsInt, sb.getData(), sb.getStart(), sb.getLength());
+                            addDataFromArray(dataRawAsInt, sb.getDataRaw(), sb.getStart(), sb.getLength());
+                        }
                         else
                             isAlive = true;
-                    }else
+                    }else{
                         addDataFromArray(dataAsInt, sb.getData(), sb.getStart(), sb.getLength());
+                        addDataFromArray(dataRawAsInt, sb.getDataRaw(), sb.getStart(), sb.getLength());
+                    }
                 }
             }
             // Reset state.
@@ -262,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        return dataAsInt;
+        return new PGMImage(dataAsInt, dataRawAsInt);
     }
 
     /**
@@ -299,6 +304,7 @@ public class MainActivity extends AppCompatActivity {
         SubArray sbTemp = subArrays.get(pos);
         int length = (wTo-wFrom)*(hTo-hFrom);
         int[] tempData = new int[length];
+        int[] tempDataRaw = new int[length];
         int temp, b1, b2 = 0, b3 = 0, colorValue;
         int dataIndex = (int)(hFrom*str_w*1.5);
 
@@ -313,11 +319,12 @@ public class MainActivity extends AppCompatActivity {
                     temp = (b2 >> 4) | (b3 << 4);
                     dataIndex += 2;
                 }
+                tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
                 colorValue = (int)(((double)temp / 4095.0) * 255);
                 tempData[((h-hFrom)*str_w) + (w-wFrom)] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
             }
 
-        sbTemp.setAll(tempData,(hFrom*str_w), length);
+        sbTemp.setAll(tempData, tempDataRaw, (hFrom*str_w), length);
     }
 
     /**
