@@ -49,7 +49,7 @@ public class StreamRecorder {
             //*Don't* hardcode "/sdcard"
             File sdcard = Environment.getExternalStorageDirectory();
 
-            //Create the file
+            //Open the file
             File file = new File(sdcard, "/Download/" + filename + ".play");
             BufferedOutputStream playFile = new BufferedOutputStream(new FileOutputStream(file, true));
 
@@ -69,33 +69,14 @@ public class StreamRecorder {
         if (counter < frames) {
 
             int data[][] = new int[image.getHeight()][image.getWidth()];
-            int y = 0;
-            int x = 0;
-            int maxValue = 0;
+            int dataRaw[] = image.getDataListRaw();
 
-            for (int i = 0; i < image.getDataList().length; ++i) {
-
-                data[y][x] = image.getDataList()[i];
-                ++x;
-
-                if (x == image.getWidth()) {
-                    ++y;
-                    x = 0;
-                }
-                if (maxValue < image.getDataList()[i]) {
-                    maxValue = image.getDataList()[i];
+            // Convert image to something PGMIO.write() can use.
+            for(int h = 0; h < image.getHeight(); h++) {
+                for (int w = 0; w < image.getWidth(); w++) {
+                    data[h][w] = dataRaw[(h * image.getWidth()) + w];
                 }
             }
-
-            /*
-            System.out.println("DATA CONTENT:");
-            for (int[] i : data) {
-                for (int j : i) {
-                    System.out.print(j + " ");
-                }
-                System.out.println();
-            }
-            */
 
             File sdcard = Environment.getExternalStorageDirectory();
             File file = new File(sdcard, "/Download/" + filename + "~" + counter + ".PGM");
@@ -103,15 +84,13 @@ public class StreamRecorder {
             try {
 
                 writeToPlayFile(counter);
-                PGMIO.write(data, file, maxValue);
+                PGMIO.write(data, file, image.getMaxValue());
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             ++counter;
-
         }
     }
-
 }
