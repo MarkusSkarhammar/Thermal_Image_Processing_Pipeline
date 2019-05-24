@@ -82,7 +82,6 @@ public class MotionDetectionS {
         Imgproc.findContours(thresh, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
         Rect r;
-        // ArrayList<Rect> rect_array = new ArrayList<Rect>();
 
         // Loop over the contours.
         for (int i = 0; i < contours.size(); ++i) {
@@ -92,8 +91,11 @@ public class MotionDetectionS {
 
             if (Imgproc.contourArea(contours.get(i)) > 500) {
                 r = Imgproc.boundingRect(contours.get(i));
-                //rect_array.add(r);
-                Imgproc.rectangle(originalFrame, r, new Scalar(0, 220, 0));
+
+                // Aspect ratio check. A human is taller than they are wide.
+                if ((r.width / r.height) < 1) {
+                    Imgproc.rectangle(originalFrame, r, new Scalar(0, 220, 0));
+                }
             }
 
             // System.out.println("Motion detected!!!");
