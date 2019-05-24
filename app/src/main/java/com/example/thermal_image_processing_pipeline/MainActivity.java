@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     public static int str_w = 0,  str_h = 0;
 
     // Data conversion threads' stuff.
-    int AMOUNT_OF_THREADS_FOR_CONVERSION = 3;
+    public static int MAX_THREADS = 3;
     private boolean isAlive = true;
 
     // Motion sensor stuff.
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Setup variables for the data conversion worker threads
-        AMOUNT_OF_THREADS_FOR_CONVERSION = Runtime.getRuntime().availableProcessors();
+        MAX_THREADS = Runtime.getRuntime().availableProcessors();
 
 
     }
@@ -218,13 +218,13 @@ public class MainActivity extends AppCompatActivity {
         if(imageData != null) {
             dataAsInt = new int[str_h*str_w];
             dataRawAsInt = new int[str_h*str_w];
-            for(int i = 0; i < AMOUNT_OF_THREADS_FOR_CONVERSION-1; i++){
+            for(int i = 0; i < MAX_THREADS -1; i++){
                 subArrays.add(new SubArray(generateColorsFromImagesBytesWithinRange(
                         imageData,
                         0,
-                        0 + (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * i,
+                        0 + (str_h/ MAX_THREADS) * i,
                         str_w,
-                        (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * (i + 1),
+                        (str_h/ MAX_THREADS) * (i + 1),
                         i)
                 ));
             }
@@ -238,10 +238,10 @@ public class MainActivity extends AppCompatActivity {
             generateColorsFromImageBytes(
                     imageData,
                     0,
-                    0 + (str_h/AMOUNT_OF_THREADS_FOR_CONVERSION) * (AMOUNT_OF_THREADS_FOR_CONVERSION-1),
+                    0 + (str_h/ MAX_THREADS) * (MAX_THREADS -1),
                     str_w,
                     str_h,
-                    AMOUNT_OF_THREADS_FOR_CONVERSION-1
+                    MAX_THREADS -1
             );
 
             // Merge all the different sub arrays of int into the final int array. Also make sure the threads are dead.

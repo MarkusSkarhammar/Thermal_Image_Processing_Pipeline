@@ -22,6 +22,12 @@ public class SubArray {
         this.length = length;
     }
 
+    public void setAll(int[] data, int start, int length){
+        this.data = data;
+        this.start = start;
+        this.length = length;
+    }
+
     public int[] getData() {
         return data;
     }

@@ -15,6 +15,7 @@ import com.log.log;
 public class Pipeline {
     private Shutter_Correction shutter;
     private float[][] gain;
+    private OpenCVHandler openCV;
 
     /**
      *
@@ -25,6 +26,7 @@ public class Pipeline {
     public Pipeline(Activity a, int width, int height){
         shutter = new Shutter_Correction();
         getGain(a, width, height);
+        openCV = new OpenCVHandler();
     }
 
     /**
@@ -46,13 +48,13 @@ public class Pipeline {
 
         //timeStampStart = System.currentTimeMillis();
 
-        OpenCVHandler.equalizeHist(image);
+        openCV.equalizeHist(image);
 
-        OpenCVHandler.PixelCorrection(image.getProcessedBitmap());
+        //OpenCVHandler.PixelCorrection(image.getProcessedBitmap());
 
-        ContrastAndBrightness(image.getProcessedBitmap(), MainActivity.contrast, MainActivity.brightness);
+        //ContrastAndBrightness(image.getProcessedBitmap(), MainActivity.contrast, MainActivity.brightness);
 
-        OpenCVHandler.Sharpening(image.getProcessedBitmap(), MainActivity.sharpening);
+        //OpenCVHandler.Sharpening(image.getProcessedBitmap(), MainActivity.sharpening);
 
         //timeStampEnd = System.currentTimeMillis();
         //log.addInput2(" Time to process image: " + (timeStampEnd - timeStampStart) + " ms.");
@@ -74,7 +76,7 @@ public class Pipeline {
      * @param brightness The brightness value.
      */
     public void ContrastAndBrightness(Bitmap b, double contrast, int brightness){
-        OpenCVHandler.ContrastAndBrightness(b, contrast, brightness);
+        //OpenCVHandler.ContrastAndBrightness(b, contrast, brightness);
     }
 
     /**

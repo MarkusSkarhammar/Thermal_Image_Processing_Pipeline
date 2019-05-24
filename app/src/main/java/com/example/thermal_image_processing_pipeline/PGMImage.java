@@ -45,4 +45,8 @@ public class PGMImage {
     public int[] getDataListRaw() {
         return dataListRaw;
     }
+
+    public void setDataList(int[] dataList) {
+        this.dataList = dataList;
+    }
 }
