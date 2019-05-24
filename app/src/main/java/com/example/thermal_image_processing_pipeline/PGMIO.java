@@ -24,6 +24,8 @@ package com.example.thermal_image_processing_pipeline;
  * SOFTWARE.
  */
 
+import android.util.Log;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -178,6 +180,7 @@ public final class PGMIO {
         if (maxval > MAXVAL)
             throw new IllegalArgumentException("The maximum gray value cannot exceed " + MAXVAL + ".");
         final BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(file));
+        int c = 0;
         try {
             stream.write(MAGIC.getBytes());
             stream.write("\n".getBytes());
@@ -187,12 +190,23 @@ public final class PGMIO {
             stream.write("\n".getBytes());
             stream.write(Integer.toString(maxval).getBytes());
             stream.write("\n".getBytes());
+
             for (int i = 0; i < image.length; ++i) {
                 for (int j = 0; j < image[0].length; ++j) {
+
                     final int p = image[i][j];
-                    if (p < 0 || p > maxval)
-                        throw new IOException("Pixel value " + p + " outside of range [0, " + maxval + "].");
-                    stream.write(image[i][j]);
+
+                    if (maxval < 256) {     // One byte will fit .
+                        stream.write(p);
+                    } else {                // Two bytes necessary
+                        if (p < 256) {      // Check if padding is needed.
+                            stream.write(0x0);
+                            stream.write(p & 0xFF);
+                        } else {
+                            stream.write((p & 0xFF00) >> 8);
+                            stream.write(p & 0xFF);
+                        }
+                    }
                 }
             }
         } finally {
