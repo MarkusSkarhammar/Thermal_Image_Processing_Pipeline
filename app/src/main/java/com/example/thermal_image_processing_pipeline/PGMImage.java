@@ -26,9 +26,26 @@ public class PGMImage {
 
     public int getWidth() { return width; }
     public int getHeight() { return height; }
-    public int getMaxValue() { return maxValue; }
 
-    public void setMaxValue(final int maxValue) { this.maxValue = maxValue; }
+    public int getMaxValue() {
+
+        if (maxValue != 0) {        // Check that we haven't already done this.
+            return maxValue;
+        }
+
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+
+                int i = dataListRaw[(y * width) + x];
+
+                if (maxValue < i) {
+                    maxValue = i;
+                }
+            }
+        }
+
+        return maxValue;
+    }
 
     public Bitmap getProcessedBitmap() {
         return processedBitmap;
