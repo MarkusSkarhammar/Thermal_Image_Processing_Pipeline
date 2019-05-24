@@ -33,14 +33,9 @@ public class PGMImage {
             return maxValue;
         }
 
-        for (int y = 0; y < height; ++y) {
-            for (int x = 0; x < width; ++x) {
-
-                int i = dataListRaw[(y * width) + x];
-
-                if (maxValue < i) {
-                    maxValue = i;
-                }
+        for (int i : dataListRaw) {
+            if (maxValue < i) {
+                maxValue = i;
             }
         }
 
