@@ -2,6 +2,8 @@ package com.example.thermal_image_processing_pipeline;
 
 import android.graphics.Bitmap;
 
+import com.pipeline.thermal_image_processing_pipeline.Denoising;
+
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -113,6 +115,9 @@ public class OpenCVHandler {
         int[] tempData = new int[length];
 
         addDataFromArray(tempData, img.getDataList(), (hFrom*str_w), length, true);
+
+        Denoising.MeanFilter(tempData, wFrom, hFrom, wTo, hTo);
+        //Denoising.MedianFilter(tempData, wFrom, hFrom, wTo, hTo);
 
         Mat src = new Mat (img.getWidth(), (hTo-hFrom), CvType.CV_32S);
         src.put(0, 0, tempData);
