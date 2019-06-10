@@ -14,8 +14,8 @@ import com.log.log;
 
 public class Pipeline {
     private Shutter_Correction shutter;
-    long timeStampStart, timeStampEnd;
     private float[][] gain;
+    private OpenCVHandler openCV;
 
     /**
      *
@@ -26,6 +26,7 @@ public class Pipeline {
     public Pipeline(Activity a, int width, int height){
         shutter = new Shutter_Correction();
         getGain(a, width, height);
+        openCV = new OpenCVHandler();
     }
 
     /**
@@ -47,13 +48,13 @@ public class Pipeline {
 
         //timeStampStart = System.currentTimeMillis();
 
-        OpenCVHandler.equalizeHist(image);
+        openCV.equalizeHist(image);
 
-        OpenCVHandler.PixelCorrection(image.getProcessedBitmap());
+        //OpenCVHandler.PixelCorrection(image.getProcessedBitmap());
 
-        ContrastAndBrightness(image.getProcessedBitmap(), MainActivity.contrast, MainActivity.brightness);
+        //ContrastAndBrightness(image.getProcessedBitmap(), MainActivity.contrast, MainActivity.brightness);
 
-        OpenCVHandler.Sharpening(image.getProcessedBitmap(), MainActivity.sharpening);
+        //OpenCVHandler.Sharpening(image.getProcessedBitmap(), MainActivity.sharpening);
 
         //timeStampEnd = System.currentTimeMillis();
         //log.addInput2(" Time to process image: " + (timeStampEnd - timeStampStart) + " ms.");
@@ -75,7 +76,7 @@ public class Pipeline {
      * @param brightness The brightness value.
      */
     public void ContrastAndBrightness(Bitmap b, double contrast, int brightness){
-        OpenCVHandler.ContrastAndBrightness(b, contrast, brightness);
+        //OpenCVHandler.ContrastAndBrightness(b, contrast, brightness);
     }
 
     /**
@@ -83,8 +84,10 @@ public class Pipeline {
      * @param image The image to be altered.
      */
     public void Shutter_Correction(PGMImage image){
+        /*
         shutter.applyShutterAndGain(image, gain);
         checkMaxValue(image);
+        */
     }
 
     /**
@@ -101,6 +104,7 @@ public class Pipeline {
      * Get the max value from an image.
      * @param image The image who's max color value is to be checked.
      */
+    /*
     private void checkMaxValue(PGMImage image){
         int maxValue = 0, data = 0;
         for(int y = 0; y < image.getHeight(); ++y){
@@ -116,7 +120,6 @@ public class Pipeline {
         int sections = 8, width = image.getWidth()/sections, height = image.getHeight()/sections;
         for(int ySection = 0; ySection < sections; ySection++){
             for(int xSection = 0; xSection < sections; xSection++){
-                HistogramEqualization he = new HistogramEqualization(256, xSection * width, ySection * height, width, height);
                 for(int y = ySection * height; y < ySection * height + height; ++y){
                     for(int x = xSection * width; x < xSection * width + width; ++x){
                         he.add(image.getDataAt(x, y), image.getMaxValue());
@@ -130,4 +133,5 @@ public class Pipeline {
 
         //image.setHasBeenProcessed(true);
     }
+    */
 }

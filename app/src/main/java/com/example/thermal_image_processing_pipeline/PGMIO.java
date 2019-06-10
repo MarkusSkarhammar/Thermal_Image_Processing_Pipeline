@@ -24,6 +24,8 @@ package com.example.thermal_image_processing_pipeline;
  * SOFTWARE.
  */
 
+import android.util.Log;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -33,6 +35,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.thermal_image_processing_pipeline.MainActivity.str_w;
 
 /**
  * A utility class for reading and writing PGM images. Methods use integers to represent unsigned bytes.
@@ -87,6 +91,8 @@ public final class PGMIO {
                 throw new IOException("The image's maximum gray value must be in range [0, " + MAXVAL + "].");
             if (max > 255)
                 amount = 2;
+
+            /*
             final int[][] image = new int[col][row];
             for (int j = 0; j < col; ++j) {
                 for (int i = 0; i < row; ++i) {
@@ -98,7 +104,19 @@ public final class PGMIO {
                     image[j][i] = p;
                 }
             }
-            return new PGMImage(image, max);
+            */
+
+            final int[]image = new int[col * row];
+            for (int i = 0; i < (col * row); ++i) {
+                final int p = getData(stream, amount);
+                if (p == -1)
+                    throw new IOException("Reached end-of-file prematurely.");
+                else if (p < 0 || p > MAXVAL)
+                    throw new IOException("Pixel value " + p + " outside of range [0, " + max + "].");
+                image[i] = p;
+            }
+
+            return new PGMImage(image, image);
         } finally {
             stream.close();
         }
@@ -161,7 +179,6 @@ public final class PGMIO {
      * Writes a grayscale image to a file in PGM format.
      * @param image a two-dimensional byte array representation of the image
      * @param file the file to write to
-     * @throws IllegalArgumentException
      * @throws IOException
      */
     public static void write(final int[][] image, final File file) throws IOException {
@@ -173,13 +190,13 @@ public final class PGMIO {
      * @param image a two-dimensional byte array representation of the image
      * @param file the file to write to
      * @param maxval the maximum gray value
-     * @throws IllegalArgumentException
      * @throws IOException
      */
     public static void write(final int[][] image, final File file, final int maxval) throws IOException {
         if (maxval > MAXVAL)
             throw new IllegalArgumentException("The maximum gray value cannot exceed " + MAXVAL + ".");
         final BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(file));
+        int c = 0;
         try {
             stream.write(MAGIC.getBytes());
             stream.write("\n".getBytes());
@@ -189,12 +206,23 @@ public final class PGMIO {
             stream.write("\n".getBytes());
             stream.write(Integer.toString(maxval).getBytes());
             stream.write("\n".getBytes());
+
             for (int i = 0; i < image.length; ++i) {
                 for (int j = 0; j < image[0].length; ++j) {
+
                     final int p = image[i][j];
-                    if (p < 0 || p > maxval)
-                        throw new IOException("Pixel value " + p + " outside of range [0, " + maxval + "].");
-                    stream.write(image[i][j]);
+
+                    if (maxval < 256) {     // One byte will fit.
+                        stream.write(p);
+                    } else {                // Two bytes necessary.
+                        if (p < 256) {      // Check if padding is needed.
+                            stream.write(0x0);
+                            stream.write(p & 0xFF);
+                        } else {
+                            stream.write((p & 0xFF00) >> 8);    // Most significant byte first.
+                            stream.write(p & 0xFF);
+                        }
+                    }
                 }
             }
         } finally {
