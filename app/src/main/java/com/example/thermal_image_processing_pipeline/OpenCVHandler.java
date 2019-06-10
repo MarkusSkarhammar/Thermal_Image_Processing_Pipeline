@@ -44,7 +44,7 @@ public class OpenCVHandler {
 
         //Denoising.MeanFilter(img.getDataList(), 0, 0, str_w, str_h);
 
-        /*
+
         dataAsInt = new int[img.getHeight()*img.getWidth()];
 
         for(int i = 0; i < MAX_THREADS -1; i++) {
@@ -92,7 +92,7 @@ public class OpenCVHandler {
         // Reset state.
         isAlive = true;
         subArrays.clear();
-
+        /*
 
         Mat src = new Mat (img.getWidth(), img.getHeight(), CvType.CV_32S);
         src.put(0, 0, img.getDataList());
@@ -109,11 +109,11 @@ public class OpenCVHandler {
         src.convertTo(src, CvType.CV_32S);
         src.put(0,0, img.getDataList());
         //src.convertTo(src,-1,1,-90);
-
+        */
 
 
         img.setDataList(dataAsInt);
-        */
+
         img.setProcessedBitmap(DisplayHandler.generateBitmapFromPGM(img));
     }
 
@@ -134,6 +134,7 @@ public class OpenCVHandler {
         */
         //Denoising.MedianFilter(tempData, wFrom, hFrom, wTo, hTo);
 
+        /*
         Mat src = new Mat (img.getWidth(), (hTo-hFrom), CvType.CV_32SC(3));
         src.put(0, 0, tempData);
         src.convertTo(src, CvType.CV_8UC1);
@@ -163,6 +164,13 @@ public class OpenCVHandler {
             temp = tempData[i];
             tempData[i] = 0xff000000 | (temp << 16) | (temp << 8) | temp;
         }
+        */
+        int temp;
+        for(int i = 0; i < tempData.length; i++){
+            temp = (int)(((double)tempData[i] / 4095.0) * 255);
+            tempData[i] = 0xff000000 | (temp << 16) | (temp << 8) | temp;
+        }
+
 
         sbTemp.setAll(tempData, (hFrom*str_w), length);
     }

@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     public static double contrast = 1.0;
 
     // Image pixels for width and height.
-    public static int str_w = 0,  str_h = 0;
+    public static int str_w = 384,  str_h = 288;
 
     // Data conversion threads' stuff.
     public static int MAX_THREADS = 3;
@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         init();
 
         generateBitmaps();
-        new ConnectTask().execute("");
+        //new ConnectTask().execute("");
 
 
     }
