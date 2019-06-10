@@ -36,6 +36,15 @@ public class StreamRecorder {
         this.filename = filename;
         this.frames = frames;
 
+        // Check if play file already exists and delete it.
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            File sdcard = Environment.getExternalStorageDirectory();
+            File file = new File(sdcard, "/Download/" + filename + ".play");
+            if (file.exists()) {
+                file.delete();
+            }
+        }
     }
 
     private void writeToPlayFile(int counter) throws IOException {

@@ -36,6 +36,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.thermal_image_processing_pipeline.MainActivity.str_w;
+
 /**
  * A utility class for reading and writing PGM images. Methods use integers to represent unsigned bytes.
  *
@@ -89,6 +91,8 @@ public final class PGMIO {
                 throw new IOException("The image's maximum gray value must be in range [0, " + MAXVAL + "].");
             if (max > 255)
                 amount = 2;
+
+            /*
             final int[][] image = new int[col][row];
             for (int j = 0; j < col; ++j) {
                 for (int i = 0; i < row; ++i) {
@@ -100,7 +104,19 @@ public final class PGMIO {
                     image[j][i] = p;
                 }
             }
-            return new PGMImage(new int[1], new int[1]);
+            */
+
+            final int[]image = new int[col * row];
+            for (int i = 0; i < (col * row); ++i) {
+                final int p = getData(stream, amount);
+                if (p == -1)
+                    throw new IOException("Reached end-of-file prematurely.");
+                else if (p < 0 || p > MAXVAL)
+                    throw new IOException("Pixel value " + p + " outside of range [0, " + max + "].");
+                image[i] = p;
+            }
+
+            return new PGMImage(image, image);
         } finally {
             stream.close();
         }
