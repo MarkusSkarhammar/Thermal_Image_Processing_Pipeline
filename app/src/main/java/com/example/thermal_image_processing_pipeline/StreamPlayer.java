@@ -18,11 +18,6 @@ public class StreamPlayer {
 
         Frame stream player.
 
-        In order to use, see the following example code:
-
-            StreamPlayer sp = new StreamPlayer(MainActivity.this, "test");
-            imageTemp = sp.play();
-
      */
 
     private Activity activity;
