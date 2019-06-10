@@ -7,7 +7,9 @@ import com.pipeline.thermal_image_processing_pipeline.Denoising;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.photo.Photo;
 
 import java.util.ArrayList;
 
@@ -15,6 +17,7 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.example.thermal_image_processing_pipeline.MainActivity.MAX_THREADS;
 import static com.example.thermal_image_processing_pipeline.MainActivity.brightness;
 import static com.example.thermal_image_processing_pipeline.MainActivity.contrast;
+import static com.example.thermal_image_processing_pipeline.MainActivity.denoising;
 import static com.example.thermal_image_processing_pipeline.MainActivity.sharpening;
 import static com.example.thermal_image_processing_pipeline.MainActivity.str_h;
 import static com.example.thermal_image_processing_pipeline.MainActivity.str_w;
@@ -39,6 +42,9 @@ public class OpenCVHandler {
         //Mat src = new Mat (b.getWidth(), b.getHeight(), CV_8UC1);
         //Utils.bitmapToMat(b, src);
 
+        //Denoising.MeanFilter(img.getDataList(), 0, 0, str_w, str_h);
+
+        /*
         dataAsInt = new int[img.getHeight()*img.getWidth()];
 
         for(int i = 0; i < MAX_THREADS -1; i++) {
@@ -82,11 +88,12 @@ public class OpenCVHandler {
                 }
             }
         }
+
         // Reset state.
         isAlive = true;
         subArrays.clear();
 
-        /*
+
         Mat src = new Mat (img.getWidth(), img.getHeight(), CvType.CV_32S);
         src.put(0, 0, img.getDataList());
         src.convertTo(src, CvType.CV_8UC1);
@@ -103,9 +110,10 @@ public class OpenCVHandler {
         src.put(0,0, img.getDataList());
         //src.convertTo(src,-1,1,-90);
 
-        */
+
 
         img.setDataList(dataAsInt);
+        */
         img.setProcessedBitmap(DisplayHandler.generateBitmapFromPGM(img));
     }
 
@@ -114,18 +122,26 @@ public class OpenCVHandler {
         int length = (wTo-wFrom)*(hTo-hFrom);
         int[] tempData = new int[length];
 
-        addDataFromArray(tempData, img.getDataList(), (hFrom*str_w), length, true);
+        addDataFromArray(tempData, img.getDataListRaw(), (hFrom*str_w), length, true);
 
-        Denoising.MeanFilter(tempData, wFrom, hFrom, wTo, hTo);
+        if(denoising) Denoising.MeanFilter(tempData, 0, 0, wTo-wFrom, hTo-hFrom, pos);
+        /*
+        int temp = 0;
+        for(int i = 0; i < tempData.length; i++){
+            temp = tempData[i];
+            tempData[i] = 0xff000000 | (temp << 16) | (temp << 8) | temp;
+        }
+        */
         //Denoising.MedianFilter(tempData, wFrom, hFrom, wTo, hTo);
 
-        Mat src = new Mat (img.getWidth(), (hTo-hFrom), CvType.CV_32S);
+        Mat src = new Mat (img.getWidth(), (hTo-hFrom), CvType.CV_32SC(3));
         src.put(0, 0, tempData);
         src.convertTo(src, CvType.CV_8UC1);
-        //Imgproc.cvtColor(src, src, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(src, src, Imgproc.COLOR_RGB2GRAY);
+        //Imgproc.cvtColor(src, src, Imgproc.COLOR_);
 
         // This is too slow!
-        //Photo.fastNlMeansDenoising(src, src);
+        //if(denoising) Photo.fastNlMeansDenoising(src, src);
 
         Imgproc.createCLAHE(3).apply(src, src);
 
@@ -137,8 +153,16 @@ public class OpenCVHandler {
 
         Imgproc.cvtColor(src, src, Imgproc.COLOR_GRAY2RGB, 4);
 
-        src.convertTo(src, CvType.CV_32S);
+        src.convertTo(src, CvType.CV_32SC(3));
+
         src.put(0,0, tempData);
+
+
+        int temp;
+        for(int i = 0; i < tempData.length; i++){
+            temp = tempData[i];
+            tempData[i] = 0xff000000 | (temp << 16) | (temp << 8) | temp;
+        }
 
         sbTemp.setAll(tempData, (hFrom*str_w), length);
     }
@@ -172,7 +196,7 @@ public class OpenCVHandler {
 
     private void ContrastAndBrightness(Mat src,  double contrast, int brightness){
 
-        src.convertTo(src,-1, contrast, brightness);
+        src.convertTo(src, -1, contrast, brightness);
 
     }
 

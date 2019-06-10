@@ -21,6 +21,8 @@ public class SeekBarListener implements SeekBar.OnSeekBarChangeListener {
         }
         else if(seekBar.getId() == R.id.seekBar3){
             Sharpening(progress);
+        }else if(seekBar.getId() == R.id.seekBarSensorType){
+            changeSensor(progress);
         }
     }
 
@@ -56,6 +58,13 @@ public class SeekBarListener implements SeekBar.OnSeekBarChangeListener {
      */
     private void Sharpening(int progress) {
         MainActivity.sharpening = progress;
+    }
 
+    /**
+     * Switch from motion sensor to human detection sensor (or vice versa).
+     */
+    private void changeSensor(int progress){
+        MainActivity.sensorType = progress;
+        MainActivity.sensorChange = true;
     }
 }

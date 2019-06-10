@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private TCPClient tcpClient;
 
     public static ArrayList<byte[]> stream = new ArrayList<>();
+    public static ArrayList<PGMImage> imageStreamOffline = new ArrayList<>();
     private ArrayList<PGMImage> imageStream = new ArrayList<>();
     private ArrayList<SubArray> subArrays = new ArrayList<>();
 
@@ -55,10 +56,13 @@ public class MainActivity extends AppCompatActivity {
     // Motion sensor stuff.
     private TextView threshold, contourArea;
     private TextInputEditText thresholdInput, contourInput;
-    private Switch sensorTypeSwitch;
     private final String THRESHOLD_TEXT = "Threshold value: ", CONTOURAREA_TEXT = "ContourArea value: ";
     public static int threshold_value = 25, contourArea_value = 500;
-    public static boolean sensorType = false;
+    public static int sensorType = 2;
+    public static boolean sensorChange = false;
+
+    //Denoise
+    public static boolean denoising = false;
 
 
     @Override
@@ -102,11 +106,14 @@ public class MainActivity extends AppCompatActivity {
             final SeekBar brightness = findViewById(R.id.seekBar1);
             final SeekBar contrast = findViewById(R.id.seekBar2);
             final SeekBar sharpening = findViewById(R.id.seekBar3);
+            final SeekBar sensorType = findViewById(R.id.seekBarSensorType);
 
             SeekBarListener seekBarListener = new SeekBarListener();
             brightness.setOnSeekBarChangeListener(seekBarListener);
             contrast.setOnSeekBarChangeListener(seekBarListener);
             sharpening.setOnSeekBarChangeListener(seekBarListener);
+            sensorType.setOnSeekBarChangeListener(seekBarListener);
+
         }
 
         // Setup log
@@ -141,13 +148,16 @@ public class MainActivity extends AppCompatActivity {
                     updateContourArea();
                 }
             });
+        }
 
-            sensorTypeSwitch = findViewById(R.id.sensorType);
-            sensorTypeSwitch.setOnClickListener( new View.OnClickListener() {
+        // Setup Denoise toggle
+        {
+            final Switch denoise = findViewById(R.id.Denoisiong);
+            denoise.setOnClickListener( new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
-                    changeSensor();
+                    denoising = !denoising;
                 }
             });
         }
@@ -155,7 +165,8 @@ public class MainActivity extends AppCompatActivity {
         // Setup variables for the data conversion worker threads
         MAX_THREADS = Runtime.getRuntime().availableProcessors();
 
-
+        StreamPlayer sp = new StreamPlayer(MainActivity.this, "test");
+        sp.play();
     }
 
 
@@ -179,6 +190,8 @@ public class MainActivity extends AppCompatActivity {
                 MotionDetectionS mdS = new MotionDetectionS();
                 MotionDetectionHOG mdHOG = new MotionDetectionHOG();
 
+                int pos = 0;
+
                 while(run){
                     if(stream != null && stream.size() > 0){
                         if(stream.size() > 0){
@@ -189,16 +202,32 @@ public class MainActivity extends AppCompatActivity {
                             timeStampEnd = System.currentTimeMillis();
                             log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
-                            if (MainActivity.sensorType == false) {
+                            if (MainActivity.sensorType == 0) {
                                 mdS.detect(imageTemp);
-                            } else {
+                            } else if(MainActivity.sensorType == 1){
                                 mdHOG.detect(imageTemp);
                             }
 
                         }
-                        if(imageStream.size() > 0)
-                            updateView(imgView);
+                    }else if(imageStreamOffline.size() > 0){
+                        timeStampStart = System.currentTimeMillis();
+                        // imageTemp = generateColorsFromImageBytes(stream.remove(0));
+                        imageTemp = new PGMImage(imageStreamOffline.get(pos).getDataList());
+                        pipeline.processImage(imageTemp);
+                        imageStream.add(imageTemp);
+                        timeStampEnd = System.currentTimeMillis();
+                        log.setProcessImageDataTime(timeStampEnd-timeStampStart);
+
+                        if (MainActivity.sensorType == 0) {
+                            mdS.detect(imageTemp);
+                        } else if(MainActivity.sensorType == 1){
+                            mdHOG.detect(imageTemp);
+                        }
+                        pos++;
+                        if(pos >= imageStreamOffline.size()) pos=0;
                     }
+                    if(imageStream.size() > 0)
+                        updateView(imgView);
                 }
             }
         };
@@ -319,8 +348,9 @@ public class MainActivity extends AppCompatActivity {
                     temp = (b2 >> 4) | (b3 << 4);
                     dataIndex += 2;
                 }
-                tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
+                //tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
                 colorValue = (int)(((double)temp / 4095.0) * 255);
+                tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = colorValue;
                 tempData[((h-hFrom)*str_w) + (w-wFrom)] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
             }
 
@@ -369,13 +399,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Switch from motion sensor to human detection sensor (or vice versa).
-     */
-    private void changeSensor(){
-        sensorType = !sensorType;
-    }
-
-    /**
      * Send a task for the UI thread.
      * @param imgView The imageView to be updated.
      */
@@ -391,6 +414,21 @@ public class MainActivity extends AppCompatActivity {
                         imageStream.remove(0);
                         log.setAmountInStream(stream.size());
                         log.writeToOutputs();
+                    }
+                    if(sensorChange = true){
+                        TextView textView = findViewById(R.id.SensorTypeText);
+                        switch (sensorType){
+                            case 0:
+                                textView.setText("Sensor type: motion detection");
+                                break;
+                            case 1:
+                                textView.setText("Sensor type: human detection");
+                                break;
+                            case 2:
+                                textView.setText("Sensor type: none");
+                                break;
+                        }
+                        sensorChange = false;
                     }
                 }
             }
