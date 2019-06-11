@@ -28,6 +28,7 @@ public class PGMImage {
         this.width = 384;
         this.height = 288;
         this.dataListRaw = new int[width*height];
+        this.dataList = new int[width*height];
         int pos = 0;
         for(int i : dataList){
             this.dataListRaw[pos] = i;
@@ -71,5 +72,9 @@ public class PGMImage {
 
     public void setDataList(int[] dataList) {
         this.dataList = dataList;
+    }
+
+    public void setMaxValue(int maxValue) {
+        this.maxValue = maxValue;
     }
 }

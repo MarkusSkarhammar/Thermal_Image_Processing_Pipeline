@@ -115,7 +115,6 @@ public final class PGMIO {
                     throw new IOException("Pixel value " + p + " outside of range [0, " + max + "].");
                 image[i] = p;
             }
-
             return new PGMImage(image, image);
         } finally {
             stream.close();

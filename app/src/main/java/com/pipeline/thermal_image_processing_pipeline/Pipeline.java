@@ -14,7 +14,7 @@ import com.log.log;
 
 public class Pipeline {
     private Shutter_Correction shutter;
-    private float[][] gain;
+    private float[] gain;
     private OpenCVHandler openCV;
 
     /**
@@ -29,12 +29,24 @@ public class Pipeline {
         openCV = new OpenCVHandler();
     }
 
-    /**
-     * Extract shutter image data.
-     * @param shutterImage Shutter image.
-     */
-    public void getShutterValues(PGMImage shutterImage){
-        shutter.getShutterValues(shutterImage);
+    public int[] getShutter(){
+        return shutter.getShutterValues();
+    }
+
+    public int getMean(){
+        return shutter.getMean();
+    }
+
+    public float[] getGain(){
+        return gain;
+    }
+
+    public void applyShutterAndGainToImage(PGMImage img){
+        shutter.applyShutterAndGain(img, gain);
+    }
+
+    public void setupShutterValueFromStorage(Activity a){
+        shutter.getShutterValuesFromStorage(a);
     }
 
     /**

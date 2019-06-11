@@ -66,5 +66,7 @@ public class StreamPlayer {
             String f = filename + "~" + i;
             MainActivity.imageStreamOffline.add(FileManagement.readFile(activity, f));
         }
+
+        //MainActivity.imageStreamOffline.add(FileManagement.readFile(activity, "image"));
     }
 }
