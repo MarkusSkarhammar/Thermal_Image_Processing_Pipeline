@@ -91,13 +91,7 @@ public class OpenCVHandler {
         img.setProcessedBitmap(DisplayHandler.generateBitmapFromPGM(img));
          */
 
-        dataAsInt = img.getDataListRaw();
-
-        int temp = 0;
-        for(int i = 0; i < dataAsInt.length; i++){
-            temp = dataAsInt[i];
-            dataAsInt[i] = 0xff000000 | (temp << 16) | (temp << 8) | temp;
-        }
+        dataAsInt = img.getDataList();
 
         //if(denoising) Denoising.MeanFilter(dataAsInt, 0, 0, str_w, str_h, 0);
 

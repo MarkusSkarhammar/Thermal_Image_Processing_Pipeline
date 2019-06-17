@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         init();
 
         generateBitmaps();
-        //new ConnectTask().execute("");
+        new ConnectTask().execute("");
 
 
     }
@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void init(){
 
-        //Generate GUI
+        //Generate and setup GUI
         gui = new GUI(MainActivity.this );
 
         // Setup variables for the data conversion worker threads
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         StreamPlayer sp = new StreamPlayer(MainActivity.this, "test");
-        sp.play();
+        //sp.play();
     }
 
 
@@ -285,6 +285,9 @@ public class MainActivity extends AppCompatActivity {
         int length = (wTo-wFrom)*(hTo-hFrom);
         int[] tempData = new int[length];
         int[] tempDataRaw = new int[length];
+        final int[] shutterValues = pipeline.getShutter();
+        final float[] gain = pipeline.getGain();
+        final int mean = pipeline.getMean();
         int temp, b1, b2 = 0, b3 = 0, colorValue;
         int dataIndex = (int)(hFrom*str_w*1.5);
 
@@ -299,9 +302,10 @@ public class MainActivity extends AppCompatActivity {
                     temp = (b2 >> 4) | (b3 << 4);
                     dataIndex += 2;
                 }
-                tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
+                if(shutterGain) temp = (int)( (float)(temp - shutterValues[(h*str_w) + w]) * (1 + gain[(h*str_w) + w]) + mean);
+                //tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
                 colorValue = (int)(((double)temp / 4095.0) * 255);
-                //tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = colorValue;
+                tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = colorValue;
                 tempData[((h-hFrom)*str_w) + (w-wFrom)] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
             }
 

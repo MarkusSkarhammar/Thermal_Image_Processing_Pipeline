@@ -27,7 +27,7 @@ public class DisplayHandler {
     public static Bitmap generateBitmapFromPGM(PGMImage image){
 
         Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),  ARGB_8888);
-        bitmap.setPixels(image.getDataListRaw(), 0, bitmap.getWidth(), 0, 0, image.getWidth(), image.getHeight());
+        bitmap.setPixels(image.getDataList(), 0, bitmap.getWidth(), 0, 0, image.getWidth(), image.getHeight());
         return bitmap;
     }
 

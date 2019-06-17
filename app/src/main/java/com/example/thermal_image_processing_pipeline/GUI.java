@@ -46,6 +46,7 @@ public class GUI {
             brightness.setOnSeekBarChangeListener(seekBarListener);
             contrast.setOnSeekBarChangeListener(seekBarListener);
             sharpening.setOnSeekBarChangeListener(seekBarListener);
+            sensorType.setProgress(2);
             sensorType.setOnSeekBarChangeListener(seekBarListener);
 
         }

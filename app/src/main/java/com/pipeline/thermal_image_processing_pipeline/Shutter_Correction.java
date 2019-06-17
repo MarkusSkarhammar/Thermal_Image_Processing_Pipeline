@@ -41,17 +41,19 @@ public class Shutter_Correction {
     public void getShutterValuesFromStorage(Activity a){
         ArrayList<PGMImage> shutterValueSpatial = FileManagement.getShutterValuesFromStorage(a);
         shutterValues = new int[str_h*str_w];
-        int total = 0;
-        for(int h = 0; h < str_h; h++)
-            for(int w = 0; w < str_w; w++){
-                for(PGMImage i : shutterValueSpatial){
-                    total += i.getDataList()[(h*str_w) + w];
+        if(shutterValueSpatial.size() > 0 && shutterValueSpatial.get(0) != null){
+            int total = 0;
+            for(int h = 0; h < str_h; h++)
+                for(int w = 0; w < str_w; w++){
+                    for(PGMImage i : shutterValueSpatial){
+                        total += i.getDataList()[(h*str_w) + w];
+                    }
+                    total /= shutterValueSpatial.size();
+                    shutterValues[(h*str_w) + w] = total;
+                    total = 0;
                 }
-                total /= shutterValueSpatial.size();
-                shutterValues[(h*str_w) + w] = total;
-                total = 0;
-            }
-        mean();
+            mean();
+        }
     }
 
 
