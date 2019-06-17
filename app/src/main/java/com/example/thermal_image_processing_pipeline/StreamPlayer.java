@@ -62,11 +62,11 @@ public class StreamPlayer {
 
     public void play() {
 
-        for (int i = 0; i < last; ++i) {
+        /*for (int i = 0; i < last; ++i) {
             String f = filename + "~" + i;
             MainActivity.imageStreamOffline.add(FileManagement.readFile(activity, f));
-        }
+        }*/
 
-        //MainActivity.imageStreamOffline.add(FileManagement.readFile(activity, "image"));
+        MainActivity.imageStreamOffline.add(FileManagement.readFile(activity, "image"));
     }
 }

@@ -41,6 +41,14 @@ public class TCPClient {
     public void StartReadingRawStream(){
         try {
 
+            // Get shutter and gain
+            try {
+                SSHConnection.getGain("root", "pass", "192.168.0.90");
+                SSHConnection.getShutter("root", "pass", "192.168.0.90");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             Log.d("TCP Client", "C: Connecting...");
 
             s = new Socket(SERVER_IP, SERVER_PORT);
@@ -109,6 +117,8 @@ public class TCPClient {
 
         } catch (IOException e) {
             Log.e("TCP", "C: Error", e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

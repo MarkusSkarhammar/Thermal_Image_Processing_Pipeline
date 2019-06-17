@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.Network.thermal_image_processing_pipeline.SSHConnection;
 import com.Network.thermal_image_processing_pipeline.TCPClient;
 import com.google.android.material.textfield.TextInputEditText;
 import com.log.log;
@@ -32,7 +34,9 @@ public class MainActivity extends AppCompatActivity {
     // General variables for streaming
     private PGMImage imageTemp;
 
-    private Pipeline pipeline = null;
+    public static Pipeline pipeline = null;
+    public static boolean getShutter = false;
+    public static Activity activity;
 
     private TCPClient tcpClient;
 
@@ -93,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         init();
 
         generateBitmaps();
-        new ConnectTask().execute("");
+        //new ConnectTask().execute("");
 
 
     }
@@ -103,6 +107,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private void init(){
 
+        activity = MainActivity.this;
+
         //Generate and setup GUI
         gui = new GUI(MainActivity.this );
 
@@ -110,13 +116,12 @@ public class MainActivity extends AppCompatActivity {
         MAX_THREADS = Runtime.getRuntime().availableProcessors();
 
         pipeline = new Pipeline(MainActivity.this, 384, 288);
-        pipeline.setupShutterValueFromStorage(MainActivity.this);
-
-
 
 
         StreamPlayer sp = new StreamPlayer(MainActivity.this, "test");
-        //sp.play();
+        sp.play();
+        pipeline.getGain(MainActivity.this, str_w, str_h);
+        pipeline.setupShutterValueFromStorage(MainActivity.this);
     }
 
 

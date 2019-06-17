@@ -29,4 +29,5 @@ dependencies {
     implementation 'com.jjoe64:graphview:4.2.2'
     // Necessary for the GraphView graph plotting library.
     implementation project(':sdk')
+    implementation files('libs\\jsch-0.1.55.jar')
 }

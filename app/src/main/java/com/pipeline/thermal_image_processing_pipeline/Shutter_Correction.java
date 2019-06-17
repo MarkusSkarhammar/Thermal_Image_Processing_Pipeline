@@ -16,7 +16,7 @@ public class Shutter_Correction {
     private int mean = 0;
 
     public Shutter_Correction(){
-        shutterValues = null;
+        shutterValues = new int[str_w*str_h];
     }
 
     /**

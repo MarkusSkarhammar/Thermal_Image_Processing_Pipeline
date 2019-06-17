@@ -12,6 +12,9 @@ import com.example.thermal_image_processing_pipeline.PGMImage;
 import com.example.thermal_image_processing_pipeline.R;
 import com.log.log;
 
+import static com.example.thermal_image_processing_pipeline.MainActivity.str_h;
+import static com.example.thermal_image_processing_pipeline.MainActivity.str_w;
+
 public class Pipeline {
     private Shutter_Correction shutter;
     private float[] gain;
@@ -25,7 +28,7 @@ public class Pipeline {
      */
     public Pipeline(Activity a, int width, int height){
         shutter = new Shutter_Correction();
-        getGain(a, width, height);
+        gain = new float[str_w*str_h];
         openCV = new OpenCVHandler();
     }
 
@@ -108,7 +111,7 @@ public class Pipeline {
      * @param width of the image.
      * @param height of the image.
      */
-    private void getGain(Activity a, int width, int height){
+    public void getGain(Activity a, int width, int height){
         gain = FileManagement.getGain(a, "supplied", width, height);
     }
 
