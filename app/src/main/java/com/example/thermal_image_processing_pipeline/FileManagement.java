@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import androidx.core.app.ActivityCompat;
 
 import static android.graphics.Bitmap.Config.RGB_565;
+import static com.example.thermal_image_processing_pipeline.MainActivity.str_h;
+import static com.example.thermal_image_processing_pipeline.MainActivity.str_w;
 
 
 public class FileManagement {
@@ -40,8 +42,8 @@ public class FileManagement {
 
     }
 
-    public static float[][] getGain(Activity a, String filename, int width, int height){
-        final float[][] gain = new float[height][width];
+    public static float[] getGain(Activity a, String filename, int width, int height){
+        final float[] gain = new float[height*width];
 
         // Check if we have read permission
         int permission = ActivityCompat.checkSelfPermission(a, Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -71,7 +73,7 @@ public class FileManagement {
                                     c = (c | b2);
                                     if(c > largest)
                                         largest = c;
-                                    gain[y][x] = c;
+                                    gain[(y*str_w) + x] = c;
                                 }else
                                     break;
                             }else
@@ -80,7 +82,7 @@ public class FileManagement {
                     }
                     for(int y = 0; y < height; ++y){
                         for(int x = 0; x < width; ++x){
-                            gain[y][x] /= largest;
+                            gain[(y*str_w)+x] /= largest;
                         }
                     }
 
@@ -100,6 +102,18 @@ public class FileManagement {
 
     private static FloatBuffer fromByteArray(byte[] bytes) {
         return ByteBuffer.wrap(bytes).asFloatBuffer();
+    }
+
+    public static ArrayList<PGMImage> getShutterValuesFromStorage(Activity a){
+        ArrayList<PGMImage> shutterImages = new ArrayList<>();
+
+        for(int i = 0; i < 12; i++){
+            //Get the a shutter file
+            shutterImages.add(readFile(a, "shutter" + (i+1)));
+            //shutterImages.add(readFile(a, "shutterTest"));
+        }
+
+        return shutterImages;
     }
 
     public static PGMImage readFile(Activity a, String filename) {
@@ -128,9 +142,8 @@ public class FileManagement {
                     //You'll need to add proper error handling here
                     System.out.println(e);
                 }
-                return img;
             }
-            return null;
+            return img;
         }
         else
             return null;

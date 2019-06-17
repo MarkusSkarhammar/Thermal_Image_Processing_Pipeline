@@ -26,6 +26,9 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    //GUI
+    private GUI gui;
+
     // General variables for streaming
     private PGMImage imageTemp;
 
@@ -35,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static ArrayList<byte[]> stream = new ArrayList<>();
     public static ArrayList<PGMImage> imageStreamOffline = new ArrayList<>();
-    private ArrayList<PGMImage> imageStream = new ArrayList<>();
+    public static ArrayList<PGMImage> imageStream = new ArrayList<>();
     private ArrayList<SubArray> subArrays = new ArrayList<>();
 
     private boolean run = true;
@@ -54,15 +57,16 @@ public class MainActivity extends AppCompatActivity {
     private boolean isAlive = true;
 
     // Motion sensor stuff.
-    private TextView threshold, contourArea;
-    private TextInputEditText thresholdInput, contourInput;
-    private final String THRESHOLD_TEXT = "Threshold value: ", CONTOURAREA_TEXT = "ContourArea value: ";
     public static int threshold_value = 25, contourArea_value = 500;
     public static int sensorType = 2;
     public static boolean sensorChange = false;
 
     //Denoise
     public static boolean denoising = false;
+    //Shutter and gain
+    public static boolean shutterGain = true;
+    //CLAHE
+    public static boolean CLAHE = true;
 
 
     @Override
@@ -89,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         init();
 
         generateBitmaps();
-        //new ConnectTask().execute("");
+        new ConnectTask().execute("");
 
 
     }
@@ -98,75 +102,21 @@ public class MainActivity extends AppCompatActivity {
      * Setup device for use.
      */
     private void init(){
-        pipeline = new Pipeline(MainActivity.this, 384, 288);
 
-
-        // Setup seekBars
-        {
-            final SeekBar brightness = findViewById(R.id.seekBar1);
-            final SeekBar contrast = findViewById(R.id.seekBar2);
-            final SeekBar sharpening = findViewById(R.id.seekBar3);
-            final SeekBar sensorType = findViewById(R.id.seekBarSensorType);
-
-            SeekBarListener seekBarListener = new SeekBarListener();
-            brightness.setOnSeekBarChangeListener(seekBarListener);
-            contrast.setOnSeekBarChangeListener(seekBarListener);
-            sharpening.setOnSeekBarChangeListener(seekBarListener);
-            sensorType.setOnSeekBarChangeListener(seekBarListener);
-
-        }
-
-        // Setup log
-        {
-            TextView txtView = findViewById(R.id.textView3);
-            log.setTextView(txtView);
-            log.setActivity(MainActivity.this);
-        }
-
-        // Setup motion sensor threshold and contour layout
-        {
-            threshold = findViewById(R.id.thresholdText);
-            threshold.setText(THRESHOLD_TEXT + threshold_value);
-            thresholdInput = findViewById(R.id.thresholdInput);
-            Button clickButton = findViewById(R.id.buttonThreshold);
-            clickButton.setOnClickListener( new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    updateThreshold();
-                }
-            });
-
-            contourArea = findViewById(R.id.contourAreaText);
-            contourArea.setText(CONTOURAREA_TEXT + contourArea_value);
-            contourInput = findViewById(R.id.contourInput);
-            clickButton = findViewById(R.id.buttonContour);
-            clickButton.setOnClickListener( new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    updateContourArea();
-                }
-            });
-        }
-
-        // Setup Denoise toggle
-        {
-            final Switch denoise = findViewById(R.id.Denoisiong);
-            denoise.setOnClickListener( new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    denoising = !denoising;
-                }
-            });
-        }
+        //Generate and setup GUI
+        gui = new GUI(MainActivity.this );
 
         // Setup variables for the data conversion worker threads
         MAX_THREADS = Runtime.getRuntime().availableProcessors();
 
+        pipeline = new Pipeline(MainActivity.this, 384, 288);
+        pipeline.setupShutterValueFromStorage(MainActivity.this);
+
+
+
+
         StreamPlayer sp = new StreamPlayer(MainActivity.this, "test");
-        sp.play();
+        //sp.play();
     }
 
 
@@ -213,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
                         timeStampStart = System.currentTimeMillis();
                         // imageTemp = generateColorsFromImageBytes(stream.remove(0));
                         imageTemp = new PGMImage(imageStreamOffline.get(pos).getDataList());
+                        pipeline.applyShutterAndGainToImage(imageTemp);
                         pipeline.processImage(imageTemp);
                         imageStream.add(imageTemp);
                         timeStampEnd = System.currentTimeMillis();
@@ -227,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
                         if(pos >= imageStreamOffline.size()) pos=0;
                     }
                     if(imageStream.size() > 0)
-                        updateView(imgView);
+                        gui.updateView(MainActivity.this, imgView);
                 }
             }
         };
@@ -334,6 +285,9 @@ public class MainActivity extends AppCompatActivity {
         int length = (wTo-wFrom)*(hTo-hFrom);
         int[] tempData = new int[length];
         int[] tempDataRaw = new int[length];
+        final int[] shutterValues = pipeline.getShutter();
+        final float[] gain = pipeline.getGain();
+        final int mean = pipeline.getMean();
         int temp, b1, b2 = 0, b3 = 0, colorValue;
         int dataIndex = (int)(hFrom*str_w*1.5);
 
@@ -348,6 +302,7 @@ public class MainActivity extends AppCompatActivity {
                     temp = (b2 >> 4) | (b3 << 4);
                     dataIndex += 2;
                 }
+                if(shutterGain) temp = (int)( (float)(temp - shutterValues[(h*str_w) + w]) * (1 + gain[(h*str_w) + w]) + mean);
                 //tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
                 colorValue = (int)(((double)temp / 4095.0) * 255);
                 tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = colorValue;
@@ -366,73 +321,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void addDataFromArray(int[] arrayTo, int[] arrayFrom, int at, int length) {
         System.arraycopy(arrayFrom, 0, arrayTo, at, length);
-    }
-
-    /**
-     * Change the motion sensor's threshold value.
-     */
-    private void updateThreshold(){
-        String s = "" + thresholdInput.getText();
-        try {
-            if(Integer.parseInt(s) != 0){
-                threshold.setText(THRESHOLD_TEXT + s);
-                threshold_value = Integer.parseInt(s);
-            }
-        }catch (NumberFormatException e){
-            thresholdInput.setText("");
-        }
-    }
-
-    /**
-     * Change the motion sensor's contour area value.
-     */
-    private void updateContourArea(){
-        String s = "" + contourInput.getText();
-        try {
-            if(Integer.parseInt(s) != 0){
-                contourArea.setText(CONTOURAREA_TEXT + s);
-                contourArea_value = Integer.parseInt(s);
-            }
-        }catch (NumberFormatException e){
-            contourInput.setText("");
-        }
-    }
-
-    /**
-     * Send a task for the UI thread.
-     * @param imgView The imageView to be updated.
-     */
-    private void updateView(final ImageView imgView){
-        runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                if(imageStream != null && imageStream.size() > 0){
-                    imageTemp = imageStream.get(0);
-                    if(imageTemp.getProcessedBitmap() != null){
-                        DisplayHandler.DrawCanvas(imageTemp.getProcessedBitmap(), imgView);
-                        imageStream.remove(0);
-                        log.setAmountInStream(stream.size());
-                        log.writeToOutputs();
-                    }
-                    if(sensorChange = true){
-                        TextView textView = findViewById(R.id.SensorTypeText);
-                        switch (sensorType){
-                            case 0:
-                                textView.setText("Sensor type: motion detection");
-                                break;
-                            case 1:
-                                textView.setText("Sensor type: human detection");
-                                break;
-                            case 2:
-                                textView.setText("Sensor type: none");
-                                break;
-                        }
-                        sensorChange = false;
-                    }
-                }
-            }
-        });
     }
 
     /**

@@ -11,6 +11,8 @@ import android.widget.ImageView;
 import java.util.ArrayList;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static com.example.thermal_image_processing_pipeline.MainActivity.str_h;
+import static com.example.thermal_image_processing_pipeline.MainActivity.str_w;
 
 /**
  * Class for handling display actions.
@@ -26,6 +28,13 @@ public class DisplayHandler {
 
         Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),  ARGB_8888);
         bitmap.setPixels(image.getDataList(), 0, bitmap.getWidth(), 0, 0, image.getWidth(), image.getHeight());
+        return bitmap;
+    }
+
+    public static Bitmap generateBitmapFromArray(int[] data){
+
+        Bitmap bitmap = Bitmap.createBitmap(str_w, str_h,  ARGB_8888);
+        bitmap.setPixels(data, 0, bitmap.getWidth(), 0, 0, str_w, str_h);
         return bitmap;
     }
 
