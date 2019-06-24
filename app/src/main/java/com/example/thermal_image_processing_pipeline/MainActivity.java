@@ -151,12 +151,18 @@ public class MainActivity extends AppCompatActivity {
                 while(run){
                     if(stream != null && stream.size() > 0){
                         if(stream.size() > 0){
+
                             timeStampStart = System.currentTimeMillis();
                             imageTemp = generateColorsFromImageBytes(stream.remove(0));
-                            //Bitmap b = DisplayHandler.generateBitmapFromPGM(imageTemp);
+                            //int i = imageTemp.getMaxValue();
+                            timeStampEnd = System.currentTimeMillis();
+                            log.shutterAndGainTime += timeStampEnd - timeStampStart;
+
                             pipeline.processImage(imageTemp);
                             imageStream.add(imageTemp);
+
                             log.imageCount++;
+                            log.totalImageAmount++;
                             timeStampEnd = System.currentTimeMillis();
                             log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
@@ -299,6 +305,7 @@ public class MainActivity extends AppCompatActivity {
         int temp, b1, b2 = 0, b3 = 0, colorValue;
         int dataIndex = (int)(hFrom*str_w*1.5);
 
+
         for(int h=hFrom; h<hTo;h++)
             for(int w=wFrom;w<wTo;w++){
 
@@ -313,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
                 if(shutterGain) temp = (int)( (float)(temp - shutterValues[(h*str_w) + w]) * (gain[(h*str_w) + w]) + mean);
                 //tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
                 colorValue = (int)(((double)temp / 4095.0) * 255);
-                tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = colorValue;
+                tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
                 tempData[((h-hFrom)*str_w) + (w-wFrom)] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
             }
 

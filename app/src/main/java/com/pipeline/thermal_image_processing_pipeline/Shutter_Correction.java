@@ -36,7 +36,7 @@ public class Shutter_Correction {
         float temp;
         for(int y = 0; y < str_h; ++y){
             for(int x = 0; x < str_w; ++x){
-               if(shutterGain) temp = ( (data[(y*str_w) + x] - shutterValues[(y*str_w) + x]) * (1 + gain[(y*str_w) + x]) + mean);
+               if(shutterGain) temp = ( (data[(y*str_w) + x] - shutterValues[(y*str_w) + x]) * (gain[(y*str_w) + x]) + mean);
                else temp = data[(y*str_w) + x];
                data[(y*str_w) + x] = (int)(((double)temp / 4095.0) * 255);
             }
@@ -58,7 +58,6 @@ public class Shutter_Correction {
         Bitmap b2 = DisplayHandler.generateBitmapFromArray(data);
         System.out.println();*/
         if(shutterValueSpatial.size() > 0 && shutterValueSpatial.get(0) != null){
-
             int total = 0;
             for(int h = 0; h < str_h; h++)
                 for(int w = 0; w < str_w; w++){
@@ -69,7 +68,7 @@ public class Shutter_Correction {
                     shutterValues[(h*str_w) + w] = total;
                     total = 0;
                 }
-            mean();
+                mean();
         }
         /*
         for(int h=0; h<str_h;h++)
@@ -85,7 +84,6 @@ public class Shutter_Correction {
     public int[] getShutterValues(){
         return shutterValues;
     }
-
 
     private void mean(){
         int value = 0;
