@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
         init();
 
         generateBitmaps();
-        //new ConnectTask().execute("");
+        new ConnectTask().execute("");
 
 
     }
@@ -119,9 +120,9 @@ public class MainActivity extends AppCompatActivity {
 
 
         StreamPlayer sp = new StreamPlayer(MainActivity.this, "test");
-        sp.play();
-        pipeline.getGain(MainActivity.this, str_w, str_h);
-        pipeline.setupShutterValueFromStorage(MainActivity.this);
+        //sp.play();
+        //pipeline.getGain(MainActivity.this, str_w, str_h);
+        //pipeline.setupShutterValueFromStorage(MainActivity.this);
     }
 
 
@@ -152,8 +153,10 @@ public class MainActivity extends AppCompatActivity {
                         if(stream.size() > 0){
                             timeStampStart = System.currentTimeMillis();
                             imageTemp = generateColorsFromImageBytes(stream.remove(0));
+                            //Bitmap b = DisplayHandler.generateBitmapFromPGM(imageTemp);
                             pipeline.processImage(imageTemp);
                             imageStream.add(imageTemp);
+                            log.imageCount++;
                             timeStampEnd = System.currentTimeMillis();
                             log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
@@ -307,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
                     temp = (b2 >> 4) | (b3 << 4);
                     dataIndex += 2;
                 }
-                if(shutterGain) temp = (int)( (float)(temp - shutterValues[(h*str_w) + w]) * (1 + gain[(h*str_w) + w]) + mean);
+                if(shutterGain) temp = (int)( (float)(temp - shutterValues[(h*str_w) + w]) * (gain[(h*str_w) + w]) + mean);
                 //tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
                 colorValue = (int)(((double)temp / 4095.0) * 255);
                 tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = colorValue;

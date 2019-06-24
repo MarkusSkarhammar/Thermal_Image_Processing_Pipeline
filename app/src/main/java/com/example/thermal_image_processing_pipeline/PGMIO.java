@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.thermal_image_processing_pipeline.MainActivity.str_h;
 import static com.example.thermal_image_processing_pipeline.MainActivity.str_w;
 
 /**
@@ -106,6 +107,27 @@ public final class PGMIO {
             }
             */
 
+            /*int[]image = new int[col * row];
+            int dataIndex = 0;
+            int temp, b1, b2 = 0, b3 = 0;
+
+            for(int h=0; h<str_h;h++)
+                for(int w=0;w<str_w;w++) {
+
+                    if (dataIndex % 3 == 0) {
+                        b1 = getData(stream, 1) & 0xff;
+                        b2 = getData(stream, 1) & 0xff;
+                        b3 = getData(stream, 1) & 0xff;
+                        temp = ((b2 & 0xf) << 8) | b1;
+                        dataIndex += 1;
+                    } else {
+                        temp = (b2 >> 4) | (b3 << 4);
+                        dataIndex += 2;
+                    }
+                    image[(h*str_w) + w] = temp;
+                }
+            */
+
             final int[]image = new int[col * row];
             for (int i = 0; i < (col * row); ++i) {
                 final int p = getData(stream, amount);
@@ -115,6 +137,7 @@ public final class PGMIO {
                     throw new IOException("Pixel value " + p + " outside of range [0, " + max + "].");
                 image[i] = p;
             }
+
             return new PGMImage(image, image);
         } finally {
             stream.close();

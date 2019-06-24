@@ -170,6 +170,7 @@ public class GUI {
                         DisplayHandler.DrawCanvas(imageTemp.getProcessedBitmap(), imgView);
                         imageStream.remove(0);
                         log.setAmountInStream(stream.size());
+                        log.checkFPS();
                         log.writeToOutputs();
                     }
                     if(MainActivity.sensorChange = true){

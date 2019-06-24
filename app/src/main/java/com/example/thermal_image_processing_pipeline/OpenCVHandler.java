@@ -92,19 +92,12 @@ public class OpenCVHandler {
         img.setProcessedBitmap(DisplayHandler.generateBitmapFromPGM(img));
          */
 
-        dataAsInt = img.getDataListRaw();
-        int colorValue;
-        for(int h=0; h<str_h;h++)
-            for(int w=0;w<str_w;w++){
-                colorValue = dataAsInt[((h)*str_w) + (w)];
-                dataAsInt[((h)*str_w) + (w)] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
-            }
 
         //if(denoising) Denoising.MeanFilter(dataAsInt, 0, 0, str_w, str_h, 0);
 
         Mat src = new Mat (img.getWidth(), img.getHeight(), CvType.CV_8UC1);
         img.setProcessedBitmap(DisplayHandler.generateBitmapFromPGM(img));
-        /*Utils.bitmapToMat(img.getProcessedBitmap(), src);
+        Utils.bitmapToMat(img.getProcessedBitmap(), src);
         Imgproc.cvtColor(src, src, Imgproc.COLOR_RGB2GRAY);
 
         // This is too slow!
@@ -120,7 +113,7 @@ public class OpenCVHandler {
 
         Imgproc.cvtColor(src, src, Imgproc.COLOR_GRAY2RGB);
 
-        Utils.matToBitmap(src, img.getProcessedBitmap());*/
+        Utils.matToBitmap(src, img.getProcessedBitmap());
     }
 
     private void equalizeHist(PGMImage img, int wFrom, int hFrom, int wTo, int hTo, int pos){

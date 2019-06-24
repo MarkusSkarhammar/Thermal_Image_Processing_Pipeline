@@ -107,11 +107,11 @@ public class FileManagement {
     public static ArrayList<PGMImage> getShutterValuesFromStorage(Activity a){
         ArrayList<PGMImage> shutterImages = new ArrayList<>();
 
-        /*for(int i = 0; i < 12; i++){
+        for(int i = 0; i < 12; i++){
             //Get the a shutter file
             shutterImages.add(readFile(a, "shutter" + (i+1)));
-        }*/
-        shutterImages.add(readFile(a, "shutterTest"));
+        }
+        //shutterImages.add(readFile(a, "shutterTest"));
 
         return shutterImages;
     }
