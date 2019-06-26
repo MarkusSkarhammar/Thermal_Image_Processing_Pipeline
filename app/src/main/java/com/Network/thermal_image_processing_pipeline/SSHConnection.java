@@ -23,7 +23,7 @@ import static com.example.thermal_image_processing_pipeline.MainActivity.str_w;
 
 public class SSHConnection {
 
-    private static final String defaultDirectory = "/root/";
+    private static final String defaultDirectory = "/var/volatile/cache/recorder/";
 
     public static void getShutter(String username, String password, String hostname) throws Exception {
 
@@ -46,35 +46,21 @@ public class SSHConnection {
 
         // Execute command
 
-        /*
-        channelssh.setCommand("cd " + defaultDirectory);        // Move to default directory.
-        channelssh.connect();
-        channelssh.disconnect();
+        String commands = "cd " + defaultDirectory + " && ";        // Move to default directory.
+        commands += "rm " + defaultDirectory + "*.pgm" + " ; ";     // Make sure there are no old PGM files.
+        commands += "catch_raw_image -k 12";                        // Takes 12 raw 12-bit (k argument) images with the shutter closed.
 
-        Thread.sleep(1000);
-
-        */
-
-        channelssh.setCommand("rm " + defaultDirectory + "*.pgm");
-        channelssh.connect();
-        channelssh.disconnect();
-
-        Thread.sleep(1000);
-
-        channelssh.setCommand("catch_raw_image -k 12");
-        channelssh.connect();
-        channelssh.disconnect();
-
-        /*
-        String commands = "cd " + defaultDirectory + "; rm " + defaultDirectory + "*.pgm;" + "catch_raw_image -s 12";
         channelssh.setCommand(commands);
-        channelssh.disconnect();*/
+        channelssh.connect();
+        channelssh.disconnect();
 
-        Thread.sleep(8000);
+        Thread.sleep(8000);                                     // Wait for the shutter images to be taken.
 
         Channel channel = session.openChannel("sftp");
         channel.connect();
+
         ChannelSftp sftpChannel = (ChannelSftp) channel;
+        sftpChannel.cd(defaultDirectory);
 
         File sdcard = Environment.getExternalStorageDirectory();
 
