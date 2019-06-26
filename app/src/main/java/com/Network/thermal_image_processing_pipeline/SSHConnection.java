@@ -45,7 +45,6 @@ public class SSHConnection {
         channelssh.setInputStream(null);
 
         // Execute command
-
         String commands = "cd " + defaultDirectory + " && ";        // Move to default directory.
         commands += "rm " + defaultDirectory + "*.pgm" + " ; ";     // Make sure there are no old PGM files.
         commands += "catch_raw_image -k 12";                        // Takes 12 raw 12-bit (k argument) images with the shutter closed.
@@ -54,9 +53,9 @@ public class SSHConnection {
         channelssh.connect();
         channelssh.disconnect();
 
-        Thread.sleep(8000);                                     // Wait for the shutter images to be taken.
+        Thread.sleep(8000);                                         // Wait for the shutter images to be taken.
 
-        Channel channel = session.openChannel("sftp");
+        Channel channel = session.openChannel("sftp");              // Prepare to fetch the shutter images by sftp.
         channel.connect();
 
         ChannelSftp sftpChannel = (ChannelSftp) channel;
@@ -66,13 +65,13 @@ public class SSHConnection {
 
         Vector<ChannelSftp.LsEntry> list = sftpChannel.ls("*.pgm");
 
-        while(list.size() < 11) {
+        while(list.size() < 11) {                                   // Ensure that all the shutter images are ready.
             Thread.sleep(500);
             list = sftpChannel.ls("*.pgm");
         }
 
         int pos = 1;
-        for(ChannelSftp.LsEntry entry : list) {
+        for(ChannelSftp.LsEntry entry : list) {                     // Get the shutter images.
             sftpChannel.get(defaultDirectory + entry.getFilename(), sdcard + "/Download/shutter" + (pos++) + ".pgm");
         }
 
