@@ -107,9 +107,9 @@ public class FileManagement {
     public static ArrayList<PGMImage> getShutterValuesFromStorage(Activity a){
         ArrayList<PGMImage> shutterImages = new ArrayList<>();
 
-        for(int i = 0; i < 12; i++){
+        for(int i = 1; i <= MainActivity.NBR_SHUTTER_IMAGES; i++){
             //Get the a shutter file
-            shutterImages.add(readFile(a, "shutter" + (i+1)));
+            shutterImages.add(readFile(a, "shutter" + (i)));
         }
         //shutterImages.add(readFile(a, "shutterTest"));
 
