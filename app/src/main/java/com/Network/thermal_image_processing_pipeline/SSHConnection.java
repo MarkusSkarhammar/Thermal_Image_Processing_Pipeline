@@ -9,11 +9,7 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -23,7 +19,7 @@ import static com.example.thermal_image_processing_pipeline.MainActivity.str_w;
 
 public class SSHConnection {
 
-    private static final String defaultDirectory = "/var/volatile/cache/recorder/";
+    private static final String CAMERA_DIRECTORY = "/var/volatile/cache/recorder/";
 
     public static void getShutter(String username, String password, String hostname) throws Exception {
 
@@ -45,34 +41,34 @@ public class SSHConnection {
         channelssh.setInputStream(null);
 
         // Execute command
-        String commands = "cd " + defaultDirectory + " && ";        // Move to default directory.
-        commands += "rm " + defaultDirectory + "*.pgm" + " ; ";     // Make sure there are no old PGM files.
-        commands += "catch_raw_image -k 12";                        // Takes 12 raw 12-bit (k argument) images with the shutter closed.
+        String commands = "cd " + CAMERA_DIRECTORY + " && ";                    // Move to default directory.
+        commands += "rm " + CAMERA_DIRECTORY + "*.pgm" + " ; ";                 // Make sure there are no old PGM files.
+        commands += "catch_raw_image -k " + MainActivity.NBR_SHUTTER_IMAGES;    // Takes a number of raw 12-bit (k argument) images with the shutter closed.
 
         channelssh.setCommand(commands);
         channelssh.connect();
         channelssh.disconnect();
 
-        Thread.sleep(8000);                                         // Wait for the shutter images to be taken.
+        // Thread.sleep(8000);                                         // Wait for the shutter images to be taken.
 
         Channel channel = session.openChannel("sftp");              // Prepare to fetch the shutter images by sftp.
         channel.connect();
 
         ChannelSftp sftpChannel = (ChannelSftp) channel;
-        sftpChannel.cd(defaultDirectory);
+        sftpChannel.cd(CAMERA_DIRECTORY);
 
         File sdcard = Environment.getExternalStorageDirectory();
 
         Vector<ChannelSftp.LsEntry> list = sftpChannel.ls("*.pgm");
 
-        while(list.size() < 11) {                                   // Ensure that all the shutter images are ready.
+        while(list.size() < MainActivity.NBR_SHUTTER_IMAGES) {         // Ensure that all the shutter images are ready.
             Thread.sleep(500);
             list = sftpChannel.ls("*.pgm");
         }
 
         int pos = 1;
         for(ChannelSftp.LsEntry entry : list) {                     // Get the shutter images.
-            sftpChannel.get(defaultDirectory + entry.getFilename(), sdcard + "/Download/shutter" + (pos++) + ".pgm");
+            sftpChannel.get(CAMERA_DIRECTORY + entry.getFilename(), sdcard + "/Download/shutter" + (pos++) + ".pgm");
         }
 
         sftpChannel.exit();
@@ -119,7 +115,7 @@ public class SSHConnection {
         File sdcard = Environment.getExternalStorageDirectory();
         File file;
 
-        for (int i = 1; i <= 12; i++){
+        for (int i = 1; i <= MainActivity.NBR_SHUTTER_IMAGES; i++){
             file = new File(sdcard, "/Download/shutter" + i + ".pgm");
             if (file.exists()) {
                 file.delete();
