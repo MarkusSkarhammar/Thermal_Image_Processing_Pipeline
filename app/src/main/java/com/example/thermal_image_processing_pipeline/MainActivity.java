@@ -73,6 +73,9 @@ public class MainActivity extends AppCompatActivity {
     //CLAHE
     public static boolean CLAHE = true;
 
+    // Camera
+    public static int NBR_SHUTTER_IMAGES = 8;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
                             //Bitmap b = DisplayHandler.generateBitmapFromPGM(imageTemp);
                             pipeline.processImage(imageTemp);
                             imageStream.add(imageTemp);
-                            log.imageCount++;
+                            //log.imageCount++;
                             timeStampEnd = System.currentTimeMillis();
                             log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
