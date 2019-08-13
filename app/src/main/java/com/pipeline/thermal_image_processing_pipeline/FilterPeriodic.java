@@ -25,7 +25,7 @@ import static org.opencv.core.Core.split;
 
 import org.opencv.imgproc.Imgproc;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.opencv.core.CvType.CV_32F;
@@ -36,9 +36,9 @@ public class FilterPeriodic {
     /*
 
         Periodic Noise Removing Filter
-        https://docs.opencv.org/3.4/d2/d0b/tutorial_periodic_noise_removing_filter.html
 
-        WIP - Not tested
+        C++ Reference:
+        https://docs.opencv.org/3.4/d2/d0b/tutorial_periodic_noise_removing_filter.html
 
      */
 
@@ -46,9 +46,10 @@ public class FilterPeriodic {
 
         // Convert image to something OpenCV can handle.
         Bitmap b = DisplayHandler.generateBitmapFromPGM(image);
-        Mat currentFrame = new Mat(b.getWidth(), b.getHeight(), CV_8UC1);
+        Mat currentFrame = new Mat(image.getWidth(), image.getHeight(), CV_8UC1);
         Utils.bitmapToMat(b, currentFrame);
 
+        Imgproc.cvtColor(currentFrame, currentFrame, Imgproc.COLOR_BGR2GRAY);
         currentFrame.convertTo(currentFrame, CV_32F);
 
         // it needs to process even image only
@@ -57,8 +58,8 @@ public class FilterPeriodic {
 
         // PSD calculation (start)
         Mat imgPSD = new Mat();
-        calcPSD(currentFrame, imgPSD, 0);
-        fftshift(imgPSD, imgPSD);
+        imgPSD = calcPSD(currentFrame,0);
+        imgPSD = fftshift(imgPSD);
         normalize(imgPSD, imgPSD, 0, 255, Core.NORM_MINMAX);
         // PSD calculation (stop)
 
@@ -72,23 +73,41 @@ public class FilterPeriodic {
 
         // filtering (start)
         Mat imgOut = new Mat();
-        fftshift(H, H);
-        filter2DFreq(currentFrame, imgOut, H);
+        H = fftshift(H);
+        imgOut = filter2DFreq(currentFrame, H);
         // filtering (stop)
 
         imgOut.convertTo(imgOut, CV_8UC1);
         normalize(imgOut, imgOut, 0, 255, Core.NORM_MINMAX);
+
+        // Update lists.
+        Utils.matToBitmap(imgOut, b);
+        image.setProcessedBitmap(b);
+
+        int[] list = new int[imgOut.rows() * imgOut.cols()];
+
+        for (int row = 0; row < imgOut.rows(); row++) {
+            for (int col = 0; col < imgOut.cols(); col++) {
+                list[row+col] = b.getPixel(col, row);
+            }
+        }
+
+        image.setDataList(list);
+
+
         // imwrite("result.jpg", imgOut);
         // imwrite("PSD.jpg", imgPSD);
-        fftshift(H, H);
-        normalize(H, H, 0, 255, Core.NORM_MINMAX);
+        // H = fftshift(H);
+        // normalize(H, H, 0, 255, Core.NORM_MINMAX);
         // imwrite("filter.jpg", H);
+
+
 
     }
 
-    private void fftshift(final Mat inputImg, Mat outputImg)
+    private Mat fftshift(final Mat inputImg)
     {
-        outputImg = inputImg.clone();
+        Mat outputImg = inputImg.clone();
 
         int cx = outputImg.cols() / 2;
         int cy = outputImg.rows() / 2;
@@ -105,29 +124,33 @@ public class FilterPeriodic {
         q1.copyTo(tmp);
         q2.copyTo(q1);
         tmp.copyTo(q2);
+
+        return outputImg;
     }
 
-    Mat filter2DFreq(final Mat inputImg, Mat outputImg, final Mat H)
+    Mat filter2DFreq(final Mat inputImg, final Mat H)
     {
-        Mat src1 = inputImg.clone();
-        Mat src2 = Mat.zeros(inputImg.size(), CV_32F);
+        List<Mat> planes = new ArrayList<Mat>();
+        planes.add(inputImg.clone());
+        planes.add(Mat.zeros(inputImg.size(), CV_32F));
         Mat complexI = new Mat();
-        List<Mat> planes = Arrays.asList(src1, src2);
+
         merge(planes, complexI);
 
         dft(complexI, complexI, DFT_SCALE);
 
-        Mat src3 = H.clone();
-        Mat src4 = Mat.zeros(H.size(), CV_32F);
+        List<Mat> planesH = new ArrayList<Mat>();
+        planesH.add(H.clone());
+        planesH.add(Mat.zeros(H.size(), CV_32F));
         Mat complexH = new Mat();
-        List<Mat> planesH = Arrays.asList(src3, src4);
+
         merge(planesH, complexH);
 
         Mat complexIH = new Mat();
         mulSpectrums(complexI, complexH, complexIH, 0);
         idft(complexIH, complexIH);
         split(complexIH, planes);
-        outputImg = planes.get(0);
+        Mat outputImg = planes.get(0);
 
         return outputImg;
     }
@@ -149,12 +172,14 @@ public class FilterPeriodic {
     // Function calculates PSD(Power spectrum density) by fft with two flags
     // flag = 0 means to return PSD
     // flag = 1 means to return log(PSD)
-    void calcPSD(final Mat inputImg, Mat outputImg, boolean flag)
+    Mat calcPSD(final Mat inputImg, int flag)
     {
-        Mat src1 = inputImg.clone();
-        Mat src2 = Mat.zeros(inputImg.size(), CV_32F);
+
+        List<Mat> planes = new ArrayList<Mat>();
+        planes.add(inputImg.clone());
+        planes.add(Mat.zeros(inputImg.size(), CV_32F));
         Mat complexI = new Mat();
-        List<Mat> planes = Arrays.asList(src1, src2);
+
         merge(planes, complexI);
 
         dft(complexI, complexI);
@@ -167,16 +192,18 @@ public class FilterPeriodic {
         Mat imgPSD = new Mat();
         magnitude(planes.get(0), planes.get(1), imgPSD);        //imgPSD = sqrt(Power spectrum density)
         pow(imgPSD, 2, imgPSD);                         //it needs ^2 in order to get PSD
-        outputImg = imgPSD;
+        Mat outputImg = imgPSD;
 
         /*
-        if (flag) {
+        if (flag == 1) {
             Mat imglogPSD = new Mat();
             imglogPSD = imgPSD + Scalar.all(1);     // ?
             log(imglogPSD, imglogPSD);
             outputImg = imglogPSD;
         }
         */
+
+        return outputImg;
 
     }
 }
