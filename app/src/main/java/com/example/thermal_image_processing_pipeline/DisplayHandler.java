@@ -4,13 +4,16 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
 
+import static android.graphics.Bitmap.Config.ARGB_4444;
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static com.example.thermal_image_processing_pipeline.MainActivity.shutterGain;
 import static com.example.thermal_image_processing_pipeline.MainActivity.str_h;
 import static com.example.thermal_image_processing_pipeline.MainActivity.str_w;
 
@@ -26,12 +29,25 @@ public class DisplayHandler {
      */
     public static Bitmap generateBitmapFromPGM(PGMImage image){
 
-        Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),  ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),  ARGB_4444);
         bitmap.setPixels(image.getDataList(), 0, bitmap.getWidth(), 0, 0, image.getWidth(), image.getHeight());
         return bitmap;
     }
 
-    public static Bitmap generateBitmapFromArray(int[] data){
+    public static Bitmap generateBitmapFromArray(int[] dataIn){
+
+
+        int[] data = new int[dataIn.length];
+        System.arraycopy(dataIn, 0, data, 0, dataIn.length);
+        int colorValue;
+        float temp;
+        for(int y = 0; y < str_h; ++y){
+            for(int x = 0; x < str_w; ++x){
+                temp = data[(y*str_w) + x];
+                colorValue = (int)(((double)temp / 4095.0) * 255);
+                data[(y*str_w) + x] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
+            }
+        }
 
         Bitmap bitmap = Bitmap.createBitmap(str_w, str_h,  ARGB_8888);
         bitmap.setPixels(data, 0, bitmap.getWidth(), 0, 0, str_w, str_h);
@@ -51,11 +67,13 @@ public class DisplayHandler {
             Rect source = new Rect(0, 0, b.getWidth(), b.getHeight());
             //b = rotate(b, 90);
             //b = flipHorizontal(b);
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
             canvas.drawBitmap(
                     b,
                     null,
                     source,
-                    null
+                    paint
             );
 
             img.setImageBitmap(b);

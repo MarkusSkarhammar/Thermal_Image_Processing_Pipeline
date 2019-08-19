@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
     public static boolean sensorChange = false;
 
     //Denoise
-    public static boolean denoising = false;
+    public static boolean denoising = true;
     //Shutter and gain
     public static boolean shutterGain = true;
     //CLAHE
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
         init();
 
         generateBitmaps();
-        new ConnectTask().execute("");
+        //new ConnectTask().execute("");
 
 
     }
@@ -120,9 +120,9 @@ public class MainActivity extends AppCompatActivity {
 
 
         StreamPlayer sp = new StreamPlayer(MainActivity.this, "test");
-        //sp.play();
-        //pipeline.getGain(MainActivity.this, str_w, str_h);
-        //pipeline.setupShutterValueFromStorage(MainActivity.this);
+        sp.play();
+        pipeline.getGain(MainActivity.this, str_w, str_h);
+        pipeline.setupShutterValueFromStorage(MainActivity.this);
     }
 
 
@@ -176,9 +176,13 @@ public class MainActivity extends AppCompatActivity {
                     }else if(imageStreamOffline.size() > 0){
                         timeStampStart = System.currentTimeMillis();
                         // imageTemp = generateColorsFromImageBytes(stream.remove(0));
+                        //Bitmap bShutter = DisplayHandler.generateBitmapFromArray(pipeline.getShutter());
                         imageTemp = new PGMImage(imageStreamOffline.get(pos).getDataList());
+                        //Bitmap b = DisplayHandler.generateBitmapFromArray(imageTemp.getDataList());
                         pipeline.applyShutterAndGainToImage(imageTemp);
+                        //Bitmap b2 = DisplayHandler.generateBitmapFromPGM(imageTemp);
                         pipeline.processImage(imageTemp);
+                        //Bitmap b3 = DisplayHandler.generateBitmapFromPGM(imageTemp);
                         imageStream.add(imageTemp);
                         timeStampEnd = System.currentTimeMillis();
                         log.setProcessImageDataTime(timeStampEnd-timeStampStart);

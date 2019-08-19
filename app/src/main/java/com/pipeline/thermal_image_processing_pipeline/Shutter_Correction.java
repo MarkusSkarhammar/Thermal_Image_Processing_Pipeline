@@ -2,15 +2,21 @@ package com.pipeline.thermal_image_processing_pipeline;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 
 import com.example.thermal_image_processing_pipeline.DisplayHandler;
 import com.example.thermal_image_processing_pipeline.FileManagement;
+import com.example.thermal_image_processing_pipeline.PGMIO;
 import com.example.thermal_image_processing_pipeline.PGMImage;
 import com.example.thermal_image_processing_pipeline.SubArray;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
+import static android.graphics.Color.BLUE;
+import static android.graphics.Color.GREEN;
+import static android.graphics.Color.RED;
 import static com.example.thermal_image_processing_pipeline.MainActivity.MAX_THREADS;
 import static com.example.thermal_image_processing_pipeline.MainActivity.shutterGain;
 import static com.example.thermal_image_processing_pipeline.MainActivity.str_h;
@@ -30,18 +36,22 @@ public class Shutter_Correction {
      * @param image The image to
      * @param gain The camera sensors' gain correction data.
      */
+    public static int GRAY = 0, RED = -1, BLUE = -2, GREEN = -3;
     public void applyShutterAndGain(PGMImage image, final float[] gain){
-
-        int[] data = image.getDataListRaw();
+        int color = GREEN;
+        int[] data = image.getDataList(), dataRaw = image.getDataListRaw();
+        //byte[] colorValue = new byte[str_h*str_w];
+        int colorValue = 0;
         float temp;
         for(int y = 0; y < str_h; ++y){
             for(int x = 0; x < str_w; ++x){
-               if(shutterGain) temp = ( (data[(y*str_w) + x] - shutterValues[(y*str_w) + x]) * (gain[(y*str_w) + x]) + mean);
+               if(shutterGain) temp = (int)( (data[(y*str_w) + x] - shutterValues[(y*str_w) + x]) * (1 + gain[(y*str_w) + x]) + mean);
                else temp = data[(y*str_w) + x];
-               data[(y*str_w) + x] = (int)(((double)temp / 4095.0) * 255);
+                dataRaw[(y*str_w) + x] = (int)temp;
+                colorValue = (byte)((temp / (double)image.getMaxValue()) * 255.0);
+                data[(y*str_w) + x] = 0xff000000 | ((colorValue & 0xff) << 16) | ((colorValue & 0xff) << 8) | (colorValue & 0xff);
             }
         }
-
     }
 
     public void getShutterValuesFromStorage(Activity a){
@@ -94,6 +104,8 @@ public class Shutter_Correction {
         }
         mean = (value / (str_h*str_w));
     }
+
+
 
     public int getMean() {
         return mean;

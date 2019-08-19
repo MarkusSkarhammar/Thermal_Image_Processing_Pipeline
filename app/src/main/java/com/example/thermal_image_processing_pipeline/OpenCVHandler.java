@@ -9,8 +9,10 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
+import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.example.thermal_image_processing_pipeline.MainActivity.CLAHE;
 import static com.example.thermal_image_processing_pipeline.MainActivity.brightness;
 import static com.example.thermal_image_processing_pipeline.MainActivity.contrast;
@@ -33,27 +35,34 @@ public class OpenCVHandler {
      * @param img The image to be processed.
      */
     public void equalizeHist(PGMImage img) {
+        Bitmap b = DisplayHandler.generateBitmapFromPGM(img);
+        img.setProcessedBitmap(b);
 
-        Mat src = new Mat (img.getWidth(), img.getHeight(), CvType.CV_8UC1);
-        img.setProcessedBitmap(DisplayHandler.generateBitmapFromPGM(img));
-        Utils.bitmapToMat(img.getProcessedBitmap(), src);
+        FileManagement.createPGM(MainActivity.activity, "RawImage", b);
+
+        Mat src = new Mat ( b.getHeight(), b.getWidth(), CvType.CV_8UC1);
+        //src.put(0, 0, img.getDataList());
+        //src.convertTo(src, CvType.CV_8UC1);
+        //img.setProcessedBitmap(DisplayHandler.generateBitmapFromPGM(img));
+        Utils.bitmapToMat(b, src);
         Imgproc.cvtColor(src, src, Imgproc.COLOR_RGB2GRAY);
 
         // This is too slow!
         //if(denoising) Photo.fastNlMeansDenoising(src, src);
 
-        if(CLAHE){
-            timeStampStart = System.currentTimeMillis();
-            Imgproc.createCLAHE(3).apply(src, src);
-            timeStampEnd = System.currentTimeMillis();
-            log.CLAHETime += timeStampEnd - timeStampStart;
-        }
 
         if(denoising) {
             timeStampStart = System.currentTimeMillis();
             PixelCorrection(src);
             timeStampEnd = System.currentTimeMillis();
             log.denoiseTime += timeStampEnd - timeStampStart;
+        }
+
+        if(CLAHE){
+            timeStampStart = System.currentTimeMillis();
+            Imgproc.createCLAHE(3).apply(src, src);
+            timeStampEnd = System.currentTimeMillis();
+            log.CLAHETime += timeStampEnd - timeStampStart;
         }
 
         timeStampStart = System.currentTimeMillis();
@@ -63,9 +72,30 @@ public class OpenCVHandler {
         timeStampEnd = System.currentTimeMillis();
         log.filterTime += timeStampEnd - timeStampStart;
 
-        Imgproc.cvtColor(src, src, Imgproc.COLOR_GRAY2RGB);
+        //Imgproc.cvtColor(src, src, Imgproc.COLOR_GRAY2RGB, 4);
+        //src.convertTo(src, CvType.CV_32S);
 
-        Utils.matToBitmap(src, img.getProcessedBitmap());
+        Utils.matToBitmap(src, b);
+        FileManagement.createPGM(MainActivity.activity, "SharpnessLevel4", b);
+
+        //src.get(0, 0, img.getColorData());
+
+        //img.setProcessedBitmap(DisplayHandler.generateBitmapFromPGM(img));
+        /*int[] data = img.getDataList();
+        int pos = 0;
+        for(byte b : img.getColorData()) {
+            //data[pos] = b;
+            data[pos] = 0xff000000 | ((b & 0xff) << 16) | ((b & 0xff) << 8) | (b & 0xff);
+            pos++;
+        }
+        img.setProcessedBitmap(DisplayHandler.generateBitmapFromPGM(img));
+
+        try {
+            PGMIO.write(img);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        */
     }
 
     private void ContrastAndBrightness(Mat src,  double contrast, int brightness){
