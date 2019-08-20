@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
         init();
 
         generateBitmaps();
-        //new ConnectTask().execute("");
+        new ConnectTask().execute("");
 
 
     }
@@ -120,9 +120,9 @@ public class MainActivity extends AppCompatActivity {
 
 
         StreamPlayer sp = new StreamPlayer(MainActivity.this, "test");
-        sp.play();
-        pipeline.getGain(MainActivity.this, str_w, str_h);
-        pipeline.setupShutterValueFromStorage(MainActivity.this);
+        //sp.play();
+        //pipeline.getGain(MainActivity.this, str_w, str_h);
+        //pipeline.setupShutterValueFromStorage(MainActivity.this);
     }
 
 

@@ -41,9 +41,6 @@ public class OpenCVHandler {
         FileManagement.createPGM(MainActivity.activity, "RawImage", b);
 
         Mat src = new Mat ( b.getHeight(), b.getWidth(), CvType.CV_8UC1);
-        //src.put(0, 0, img.getDataList());
-        //src.convertTo(src, CvType.CV_8UC1);
-        //img.setProcessedBitmap(DisplayHandler.generateBitmapFromPGM(img));
         Utils.bitmapToMat(b, src);
         Imgproc.cvtColor(src, src, Imgproc.COLOR_RGB2GRAY);
 

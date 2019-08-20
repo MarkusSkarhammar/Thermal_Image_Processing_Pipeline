@@ -171,7 +171,7 @@ public class GUI {
                         imageStream.remove(0);
                         log.setAmountInStream(stream.size());
                         log.checkFPS();
-                        //log.writeToOutputs();
+                        log.writeToOutputs();
                     }
                     if(MainActivity.sensorChange = true){
                         TextView textView = a.findViewById(R.id.SensorTypeText);

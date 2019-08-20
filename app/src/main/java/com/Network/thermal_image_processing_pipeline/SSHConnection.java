@@ -61,7 +61,7 @@ public class SSHConnection {
 
         Thread.sleep(1000);
 
-        channelssh.setCommand("catch_raw_image -k 12");
+        channelssh.setCommand("catch_raw_image -k 8");
         channelssh.connect();
         channelssh.disconnect();
 
@@ -80,7 +80,7 @@ public class SSHConnection {
 
         Vector<ChannelSftp.LsEntry> list = sftpChannel.ls("*.pgm");
 
-        while(list.size() < 11) {
+        while(list.size() < 7) {
             Thread.sleep(500);
             list = sftpChannel.ls("*.pgm");
         }
