@@ -24,6 +24,7 @@ import com.log.log;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionHOG;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionS;
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
+import com.pipeline.thermal_image_processing_pipeline.RawImageData;
 
 import java.util.ArrayList;
 
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TCPClient tcpClient;
 
-    public static ArrayList<byte[]> stream = new ArrayList<>();
+    public static ArrayList<RawImageData> stream = new ArrayList<>();
     public static ArrayList<PGMImage> imageStreamOffline = new ArrayList<>();
     public static ArrayList<PGMImage> imageStream = new ArrayList<>();
     private ArrayList<SubArray> subArrays = new ArrayList<>();
@@ -72,6 +73,10 @@ public class MainActivity extends AppCompatActivity {
     public static boolean shutterGain = true;
     //CLAHE
     public static boolean CLAHE = true;
+
+    //14-bit conversion
+    public static double offset14bit = 0.;
+    public static double gain14bit = 0.;
 
 
     @Override
@@ -140,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                long timeStampStart, timeStampEnd;
+                long timeStampStart, timeStampStart2, timeStampEnd;
                 ImageView imgView = findViewById(R.id.imageView1);
 
                 MotionDetectionS mdS = new MotionDetectionS();
@@ -210,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
      * @param imageData The frame's pixel data.
      * @return Processed data as an int array;
      */
-    private PGMImage generateColorsFromImageBytes(final byte[] imageData){
+    private PGMImage generateColorsFromImageBytes(final RawImageData imageData){
 
         // Generate an amount of thread.
         if(imageData != null) {
@@ -278,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
      * @param threadName Name of the thread.
      * @return The generated thread.
      */
-    private Thread generateColorsFromImagesBytesWithinRange(final byte[] imageData, final int wFrom, final int hFrom, final int wTo, final int hTo, final int threadName){
+    private Thread generateColorsFromImagesBytesWithinRange(final RawImageData imageData, final int wFrom, final int hFrom, final int wTo, final int hTo, final int threadName){
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -292,15 +297,16 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Conver a section of the raw frame data into an array of int.
-     * @param imageData The raw frame data.
+     * @param RawImage The container class for the frame data.
      * @param wFrom Star width position.
      * @param hFrom Start height position.
      * @param wTo End width position.
      * @param hTo End height position.
      */
-    private void generateColorsFromImageBytes(final byte[] imageData, int wFrom, int hFrom, int wTo, int hTo, final int pos){
+    private void generateColorsFromImageBytes(final RawImageData RawImage, int wFrom, int hFrom, int wTo, int hTo, final int pos){
         SubArray sbTemp = subArrays.get(pos);
         int length = (wTo-wFrom)*(hTo-hFrom);
+        byte[] imageData = RawImage.getData();
         int[] tempData = new int[length];
         int[] tempDataRaw = new int[length];
         final int[] shutterValues = pipeline.getShutter();
@@ -308,6 +314,7 @@ public class MainActivity extends AppCompatActivity {
         final int mean = pipeline.getMean();
         int temp, b1, b2 = 0, b3 = 0, colorValue;
         int dataIndex = (int)(hFrom*str_w*1.5);
+        double gain14bit = RawImage.getGain();
 
 
         for(int h=hFrom; h<hTo;h++)
@@ -321,9 +328,10 @@ public class MainActivity extends AppCompatActivity {
                     temp = (b2 >> 4) | (b3 << 4);
                     dataIndex += 2;
                 }
-                if(shutterGain) temp = (int)( (float)(temp - shutterValues[(h*str_w) + w]) * (gain[(h*str_w) + w]) + mean);
+                //temp = (int)((temp + offset14bit)/gain14bit);
+                if(shutterGain) temp = (int)( (float)( (temp - (shutterValues[(h*str_w) + w] * gain14bit))) * gain[(h*str_w) + w] + (mean * gain14bit));
                 //tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
-                colorValue = (int)(((double)temp / 4095.0) * 255);
+                colorValue = (int)(((double)temp / 4096.0) * 255);
                 tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
                 tempData[((h-hFrom)*str_w) + (w-wFrom)] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
             }

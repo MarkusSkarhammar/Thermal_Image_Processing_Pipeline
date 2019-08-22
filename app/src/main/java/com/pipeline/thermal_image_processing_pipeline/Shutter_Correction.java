@@ -75,6 +75,7 @@ public class Shutter_Correction {
                         total += i.getDataList()[(h*str_w) + w];
                     }
                     total /= shutterValueSpatial.size();
+                    //total *= 2.1;
                     shutterValues[(h*str_w) + w] = total;
                     total = 0;
                 }

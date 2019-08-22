@@ -35,10 +35,11 @@ public class OpenCVHandler {
      * @param img The image to be processed.
      */
     public void equalizeHist(PGMImage img) {
+
         Bitmap b = DisplayHandler.generateBitmapFromPGM(img);
         img.setProcessedBitmap(b);
 
-        FileManagement.createPGM(MainActivity.activity, "RawImage", b);
+        //FileManagement.createPGM(MainActivity.activity, "RawImage", b);
 
         Mat src = new Mat ( b.getHeight(), b.getWidth(), CvType.CV_8UC1);
         Utils.bitmapToMat(b, src);
@@ -73,7 +74,6 @@ public class OpenCVHandler {
         //src.convertTo(src, CvType.CV_32S);
 
         Utils.matToBitmap(src, b);
-        FileManagement.createPGM(MainActivity.activity, "SharpnessLevel4", b);
 
         //src.get(0, 0, img.getColorData());
 

@@ -166,7 +166,7 @@ public class GUI {
             public void run() {
                 if(imageStream != null && imageStream.size() > 0){
                     imageTemp = imageStream.get(0);
-                    if(imageTemp.getProcessedBitmap() != null){
+                    if(imageTemp != null && imageTemp.getProcessedBitmap() != null){
                         DisplayHandler.DrawCanvas(imageTemp.getProcessedBitmap(), imgView);
                         imageStream.remove(0);
                         log.setAmountInStream(stream.size());

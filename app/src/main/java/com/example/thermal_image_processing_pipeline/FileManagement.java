@@ -161,7 +161,7 @@ public class FileManagement {
             shutterImages.add(readFile(a, "shutter" + (i+1)));
         }
 
-        shutterImages.add(readFile(a, "shutterTest"));
+        //shutterImages.add(readFile(a, "shutterTest"));
 
         return shutterImages;
     }
