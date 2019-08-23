@@ -105,6 +105,9 @@ public class MotionDetectionS {
         // Imgproc.cvtColor(originalFrame, originalFrame, Imgproc.COLOR_RGB2GRAY);
         // Imgproc.applyColorMap(originalFrame, originalFrame, COLORMAP_JET);
 
+        // Show sensor type.
+        Imgproc.putText(originalFrame, "BFS", new Point(5, 270), Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0,255,255),2);
+
         Utils.matToBitmap(originalFrame, b);
         image.setProcessedBitmap(b);
 
