@@ -9,6 +9,7 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfRect;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
@@ -57,6 +58,9 @@ public class MotionDetectionHOG {
         for (int i = 0; i < facesArray.length; i++) {
             Imgproc.rectangle(currentFrame, facesArray[i].tl(), facesArray[i].br(), new Scalar(100), 3);
         }
+
+        // Show sensor type.
+        Imgproc.putText(currentFrame, "HOG", new Point(5, 270), Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0,255,255),2);
 
         Utils.matToBitmap(currentFrame, b);
         image.setProcessedBitmap(b);
