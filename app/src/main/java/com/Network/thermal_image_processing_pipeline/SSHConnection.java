@@ -49,8 +49,6 @@ public class SSHConnection {
         channelssh.connect();
         channelssh.disconnect();
 
-        // Thread.sleep(8000);                                         // Wait for the shutter images to be taken.
-
         Channel channel = session.openChannel("sftp");              // Prepare to fetch the shutter images by sftp.
         channel.connect();
 
@@ -61,14 +59,15 @@ public class SSHConnection {
 
         Vector<ChannelSftp.LsEntry> list = sftpChannel.ls("*.pgm");
 
-        while(list.size() < MainActivity.NBR_SHUTTER_IMAGES) {         // Ensure that all the shutter images are ready.
+        while(list.size() < MainActivity.NBR_SHUTTER_IMAGES) {      // Ensure that all the shutter images are ready.
             Thread.sleep(500);
             list = sftpChannel.ls("*.pgm");
         }
 
         int pos = 1;
         for(ChannelSftp.LsEntry entry : list) {                     // Get the shutter images.
-            sftpChannel.get(CAMERA_DIRECTORY + entry.getFilename(), sdcard + "/Download/shutter" + (pos++) + ".pgm");
+            sftpChannel.get(CAMERA_DIRECTORY + entry.getFilename(), sdcard + "/Download/shutter" + pos + ".pgm");
+            pos++;
         }
 
         sftpChannel.exit();

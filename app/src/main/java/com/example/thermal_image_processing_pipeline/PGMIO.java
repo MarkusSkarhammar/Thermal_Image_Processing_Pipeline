@@ -207,6 +207,27 @@ public final class PGMIO {
         write(image, file, MAXVAL);
     }
 
+
+    public static void write(PGMImage img) throws IOException {
+        int[][] image = new int[str_h][str_w];
+        int[] data = img.getDataList();
+        for(int h = 0; h < str_h; h++)
+            for(int w = 0; w < str_w; w++){
+                image[h][w] = data[(h * str_w) + w];
+            }
+        write(image, FileManagement.createEmptyPGMFile(MainActivity.activity, "image_" + System.currentTimeMillis()), img.getMaxValue());
+    }
+
+    public static void write(PGMImage img, boolean useRaw) throws IOException {
+        int[][] image = new int[str_h][str_w];
+        int[] data = img.getDataListRaw();
+        for(int h = 0; h < str_h; h++)
+            for(int w = 0; w < str_w; w++){
+                image[h][w] = data[(h * str_w) + w];
+            }
+        write(image, FileManagement.createEmptyPGMFile(MainActivity.activity, "image_" + System.currentTimeMillis()), img.getMaxValue());
+    }
+
     /**
      * Writes a grayscale image to a file in PGM format.
      * @param image a two-dimensional byte array representation of the image

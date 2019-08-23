@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.example.thermal_image_processing_pipeline.MainActivity;
 import com.log.log;
+import com.pipeline.thermal_image_processing_pipeline.RawImageData;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -99,8 +100,13 @@ public class TCPClient {
                         rec_bytes += amountRead;
                     }
 
+
+                    //if(MainActivity.offset14bit == 0.)
+                        //getGain(imageData);
+
+
                     if(MainActivity.stream.size() < 5){
-                        MainActivity.stream.add(imageData);
+                        MainActivity.stream.add(new RawImageData(imageData, getGain(imageData)));
                     }
 
                     // Send server an ack message
@@ -120,6 +126,38 @@ public class TCPClient {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     *
+     * @param data where the offset for 14-bit conversion is stored.
+     */
+    private void getOffset(byte[] data){
+        int b1, b2;
+        int b3;
+        b1 = data[3] & 0xff; b2 = data[4] & 0xff;
+        b3 = ((b2 << 8) | b1);
+        MainActivity.offset14bit = b3;
+    }
+
+    /**
+     *
+     * @param data where the gain for 14-bit conversion is stored.
+     */
+    private double getGain(byte[] data){
+        int b1, b2, b3, b4, a, b, c, d;
+
+        b1 = data[1] & 0xff; b2 = data[2] & 0xff; b3 = data[3] & 0xff; b4 = data[4] & 0xff;
+
+        a = (b1 >> 4) | (b2 << 4);
+
+        b = ((b4 & 0xf) << 8) | b3;
+
+        c = (b << 12);
+
+        d = c + a;
+
+       return d / 16834.0;
     }
 
     /**

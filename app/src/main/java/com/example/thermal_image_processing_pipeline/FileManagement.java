@@ -19,6 +19,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -36,10 +37,57 @@ import static com.example.thermal_image_processing_pipeline.MainActivity.str_w;
 
 public class FileManagement {
 
-    public static void writeFile(Activity a, String name){
+    public static File createEmptyPGMFile(Activity a, String name){
 
         int permission = ActivityCompat.checkSelfPermission(a, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            //Find the directory for the SD Card using the API
+            //*Don't* hardcode "/sdcard"
+            File sdcard = Environment.getExternalStorageDirectory();
+
+            //Get the text file
+            File file = new File(sdcard, "/Download/" + name + ".PGM");
+
+            if (!file.exists()) {
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return file;
+        }
+        return null;
+    }
+
+    public static void createPGM(Activity a, String name, Bitmap b) {
+        FileOutputStream out = null;
+        File sd = new File(Environment.getExternalStorageDirectory() + "/Download");
+        boolean success = true;
+        if (!sd.exists()) {
+            success = sd.mkdir();
+        }
+        if (success) {
+            File dest = new File(sd, name + ".png");
+
+            try {
+                out = new FileOutputStream(dest);
+                b.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+                // PNG is a lossless format, the compression factor (100) is ignored
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (out != null) {
+                        out.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     public static float[] getGain(Activity a, String filename, int width, int height){
@@ -107,10 +155,11 @@ public class FileManagement {
     public static ArrayList<PGMImage> getShutterValuesFromStorage(Activity a){
         ArrayList<PGMImage> shutterImages = new ArrayList<>();
 
-        for(int i = 1; i <= MainActivity.NBR_SHUTTER_IMAGES; i++){
+        for(int i = 1; i <= MainActivity.NBR_SHUTTER_IMAGES; i++) {
             //Get the a shutter file
             shutterImages.add(readFile(a, "shutter" + (i)));
         }
+
         //shutterImages.add(readFile(a, "shutterTest"));
 
         return shutterImages;
@@ -128,9 +177,6 @@ public class FileManagement {
 
             //Get the text file
             File file = new File(sdcard, "/Download/" + filename + ".PGM");
-
-            System.out.println("File exists: " + file.toString());
-            System.out.println("File exists: " + file.exists());
 
             PGMImage img = null;
 

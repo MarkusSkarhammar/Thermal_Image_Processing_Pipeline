@@ -13,8 +13,8 @@ public class log {
     private static TextView output;
     private static Activity a;
     private static ArrayList<String> inputs = new ArrayList<>();
-    private static long getImageDataTime, processImageDataTime;
-    private static int amountInStream;
+    public static long getImageDataTime, processImageDataTime, FPSTimeStamp = 0, shutterAndGainTime = 0, CLAHETime = 0, denoiseTime = 0, filterTime = 0;
+    public static int amountInStream, totalImageAmount, imageCount, FPS;
 
     public static void setTextView(final TextView tv){
         output = tv;
@@ -41,9 +41,25 @@ public class log {
 
             @Override
             public void run() {
-                output.setText("Time to get image data: " +getImageDataTime + "\nTime to process image data: " + processImageDataTime +  "\nAmount in stream: " + amountInStream);
+                output.setText("Time to get image data: " +getImageDataTime + "\nTime to process image data: " + processImageDataTime +  "\nAmount in stream: " + amountInStream +
+                        "\nFPS: " + FPS +
+                        "\nAverage time for shutter and gain: " + (shutterAndGainTime/totalImageAmount) + " ms." +
+                        "\nAverage time for CLAHE: " + (CLAHETime/totalImageAmount) + " ms." +
+                        "\nAverage time to denoise: " + (CLAHETime/totalImageAmount) + " ms." +
+                        "\nAverage time to apply filter: " + (filterTime/totalImageAmount) + " ms." +
+                        "\nTotal images processed: " + totalImageAmount);
             }
         });
+    }
+
+    public static void checkFPS(){
+        if(FPSTimeStamp == 0) FPSTimeStamp = System.currentTimeMillis();
+
+        if(System.currentTimeMillis() - FPSTimeStamp >= 1000){
+            FPS = imageCount;
+            imageCount = 0;
+            FPSTimeStamp = System.currentTimeMillis();
+        }
     }
 
 }
