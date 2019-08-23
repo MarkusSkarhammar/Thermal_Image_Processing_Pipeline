@@ -74,10 +74,12 @@ public class MainActivity extends AppCompatActivity {
     //CLAHE
     public static boolean CLAHE = true;
 
+    // Camera
+    public static int NBR_SHUTTER_IMAGES = 8;
+
     //14-bit conversion
     public static double offset14bit = 0.;
     public static double gain14bit = 0.;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
 
                             log.imageCount++;
                             log.totalImageAmount++;
+
                             timeStampEnd = System.currentTimeMillis();
                             log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
