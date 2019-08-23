@@ -78,6 +78,10 @@ public class MainActivity extends AppCompatActivity {
     public static double offset14bit = 0.;
     public static double gain14bit = 0.;
 
+    //Shutter image settings
+    public static long shutterTimeStamp = 0;
+    public static long shutterTimeInterval = 12*60*1000;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

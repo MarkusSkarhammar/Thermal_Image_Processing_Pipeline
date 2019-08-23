@@ -32,6 +32,9 @@ public class TCPClient {
     // used to read messages from the server
     private DataInputStream bufferIn;
 
+    //
+    public static boolean ERROR_SSH_SHUTTER_TRANSFER = false;
+
     public TCPClient(){
 
     }
@@ -40,15 +43,35 @@ public class TCPClient {
      * Start stream.
      */
     public void StartReadingRawStream(){
-        try {
 
-            // Get shutter and gain
-            try {
-                SSHConnection.getGain("root", "pass", "192.168.0.90");
-                SSHConnection.getShutter("root", "pass", "192.168.0.90");
-            } catch (Exception e) {
-                e.printStackTrace();
+        // Start camera
+        try {
+            SSHConnection.startCamera("root", "pass", "192.168.0.90");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Get Gain
+        try {
+            if(MainActivity.shutterTimeStamp == 0)SSHConnection.getGain("root", "pass", "192.168.0.90");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        while(true){
+            // Get shutter
+            SSHConnection.getShutter("root", "pass", "192.168.0.90");
+            if(!ERROR_SSH_SHUTTER_TRANSFER){
+                MainActivity.shutterTimeStamp = System.currentTimeMillis();
+
+                //Handle the stream
+                streamImages();
             }
+        }
+    }
+
+    private void streamImages(){
+        try {
 
             Log.d("TCP Client", "C: Connecting...");
 
@@ -81,43 +104,45 @@ public class TCPClient {
                 };
 
                 while (!s.isClosed()) {
+                    if(System.currentTimeMillis() - MainActivity.shutterTimeStamp >= MainActivity.shutterTimeInterval || MainActivity.shutterTimeStamp == 0){
+                        s.close();
+                    }else{
+                        timeStampStart = System.currentTimeMillis();
 
-                    timeStampStart = System.currentTimeMillis();
+                        for(int i = 0; i < server_params.length; i++){
+                            message = server_params[i];
+                            bufferOut.write(message);
+                        }
 
-                    for(int i = 0; i < server_params.length; i++){
-                        message = server_params[i];
-                        bufferOut.write(message);
-                    }
+                        doHeaderStuff();
 
-                    doHeaderStuff();
-
-                    rec_bytes = 0;
-                    imageData = new byte[tot_bytes];
-                    b = new byte[66000];
-                    while (rec_bytes < tot_bytes){
-                        amountRead = bufferIn.read(b);
-                        addDataFromArray(imageData, b, rec_bytes, amountRead);
-                        rec_bytes += amountRead;
-                    }
+                        rec_bytes = 0;
+                        imageData = new byte[tot_bytes];
+                        b = new byte[66000];
+                        while (rec_bytes < tot_bytes){
+                            amountRead = bufferIn.read(b);
+                            addDataFromArray(imageData, b, rec_bytes, amountRead);
+                            rec_bytes += amountRead;
+                        }
 
 
-                    //if(MainActivity.offset14bit == 0.)
+                        //if(MainActivity.offset14bit == 0.)
                         //getGain(imageData);
 
 
-                    if(MainActivity.stream.size() < 5){
-                        MainActivity.stream.add(new RawImageData(imageData, getGain(imageData)));
+                        if(MainActivity.stream.size() < 5){
+                            MainActivity.stream.add(new RawImageData(imageData, getGain(imageData)));
+                        }
+
+                        // Send server an ack message
+                        bufferOut.write(ack);
+
+                        timeStampEnd = System.currentTimeMillis();
+                        log.setGetImageDataTime(timeStampEnd-timeStampStart);
                     }
-
-                    // Send server an ack message
-                    bufferOut.write(ack);
-
-                    timeStampEnd = System.currentTimeMillis();
-                    log.setGetImageDataTime(timeStampEnd-timeStampStart);
-
                 }
 
-                }catch (Exception e) {
+            }catch (Exception e) {
                 Log.e("TCP", "S: Error", e);
             }
 

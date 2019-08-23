@@ -72,7 +72,8 @@ public class Shutter_Correction {
             for(int h = 0; h < str_h; h++)
                 for(int w = 0; w < str_w; w++){
                     for(PGMImage i : shutterValueSpatial){
-                        total += i.getDataList()[(h*str_w) + w];
+                        if(i != null)
+                            total += i.getDataList()[(h*str_w) + w];
                     }
                     total /= shutterValueSpatial.size();
                     //total *= 2.1;
