@@ -46,7 +46,7 @@ public class GUI {
             brightness.setOnSeekBarChangeListener(seekBarListener);
             contrast.setOnSeekBarChangeListener(seekBarListener);
             sharpening.setOnSeekBarChangeListener(seekBarListener);
-            sensorType.setProgress(2);
+            sensorType.setProgress(0);
             sensorType.setOnSeekBarChangeListener(seekBarListener);
 
         }
@@ -173,6 +173,8 @@ public class GUI {
                         //log.checkFPS();
                         log.writeToOutputs();
                     }
+
+                    /*
                     if(MainActivity.sensorChange = true){
                         TextView textView = a.findViewById(R.id.SensorTypeText);
                         switch (sensorType){
@@ -188,6 +190,8 @@ public class GUI {
                         }
                         MainActivity.sensorChange = false;
                     }
+                    */
+
                 }
             }
         });
