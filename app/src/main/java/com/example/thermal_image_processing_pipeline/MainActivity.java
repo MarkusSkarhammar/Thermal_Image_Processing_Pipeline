@@ -22,9 +22,11 @@ import com.Network.thermal_image_processing_pipeline.TCPClient;
 import com.google.android.material.textfield.TextInputEditText;
 import com.log.log;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionHOG;
+import com.pipeline.thermal_image_processing_pipeline.MotionDetectionMNET;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionS;
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
 import com.pipeline.thermal_image_processing_pipeline.RawImageData;
+import com.pipeline.thermal_image_processing_pipeline.SensorMeasureCenter;
 
 import java.util.ArrayList;
 
@@ -64,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Motion sensor stuff.
     public static int threshold_value = 25, contourArea_value = 500;
-    public static int sensorType = 2;
+    public static int sensorType = 0;
     public static boolean sensorChange = false;
 
     //Denoise
@@ -81,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     //Shutter image settings
     public static long shutterTimeStamp = 0;
     public static long shutterTimeInterval = 12*60*1000;
+    public static int NBR_SHUTTER_IMAGES = 8;
 
 
     @Override
@@ -154,6 +157,8 @@ public class MainActivity extends AppCompatActivity {
 
                 MotionDetectionS mdS = new MotionDetectionS();
                 MotionDetectionHOG mdHOG = new MotionDetectionHOG();
+                MotionDetectionMNET mdMNET = new MotionDetectionMNET();
+                SensorMeasureCenter sMC = new SensorMeasureCenter();
 
                 int pos = 0;
 
@@ -175,10 +180,14 @@ public class MainActivity extends AppCompatActivity {
                             timeStampEnd = System.currentTimeMillis();
                             log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
-                            if (MainActivity.sensorType == 0) {
+                            if (MainActivity.sensorType == 1) {
                                 mdS.detect(imageTemp);
-                            } else if(MainActivity.sensorType == 1){
+                            } else if(MainActivity.sensorType == 2){
                                 mdHOG.detect(imageTemp);
+                            } else if(MainActivity.sensorType == 3){
+                                mdMNET.detect(imageTemp);
+                            } else if(MainActivity.sensorType == 4){
+                                sMC.detect(imageTemp);
                             }
 
                         }
@@ -196,11 +205,16 @@ public class MainActivity extends AppCompatActivity {
                         timeStampEnd = System.currentTimeMillis();
                         log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
-                        if (MainActivity.sensorType == 0) {
+                        if (MainActivity.sensorType == 1) {
                             mdS.detect(imageTemp);
-                        } else if(MainActivity.sensorType == 1){
+                        } else if(MainActivity.sensorType == 2){
                             mdHOG.detect(imageTemp);
+                        } else if(MainActivity.sensorType == 3){
+                            mdMNET.detect(imageTemp);
+                        } else if(MainActivity.sensorType == 4){
+                            sMC.detect(imageTemp);
                         }
+
                         pos++;
                         if(pos >= imageStreamOffline.size()) pos=0;
                     }
