@@ -3,6 +3,7 @@ package com.pipeline.thermal_image_processing_pipeline;
 import android.graphics.Bitmap;
 
 import com.example.thermal_image_processing_pipeline.DisplayHandler;
+import com.example.thermal_image_processing_pipeline.MainActivity;
 import com.example.thermal_image_processing_pipeline.PGMImage;
 
 import org.opencv.android.Utils;
@@ -50,7 +51,7 @@ public class MotionDetectionS {
     public void detect(PGMImage image) {
 
         // Convert image to something OpenCV can handle.
-        Bitmap b = image.getProcessedBitmap();
+        Bitmap b = DisplayHandler.generateBitmapFromPGM(image);
         Mat currentFrame = new Mat(b.getWidth(), b.getHeight(), CV_8UC1);
         Utils.bitmapToMat(b, currentFrame);
 
@@ -102,12 +103,10 @@ public class MotionDetectionS {
 
         }
 
-        // Imgproc.cvtColor(originalFrame, originalFrame, Imgproc.COLOR_RGB2GRAY);
-        // Imgproc.applyColorMap(originalFrame, originalFrame, COLORMAP_JET);
-
         // Show sensor type.
         Imgproc.putText(originalFrame, "BFS", new Point(5, 270), Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0,255,255),2);
 
+        // Display frame.
         Utils.matToBitmap(originalFrame, b);
         image.setProcessedBitmap(b);
 

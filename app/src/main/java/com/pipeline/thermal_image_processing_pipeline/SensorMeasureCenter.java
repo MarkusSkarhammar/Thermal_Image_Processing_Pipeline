@@ -63,6 +63,7 @@ public class SensorMeasureCenter {
 
         Imgproc.rectangle(currentFrame, new Point(start_width - 1, start_height - 1), new Point(start_width + pixels + 1, start_height + pixels + 1), new Scalar(0, 255, 0));
 
+        // Display frame.
         Utils.matToBitmap(currentFrame, b);
         image.setProcessedBitmap(b);
     }

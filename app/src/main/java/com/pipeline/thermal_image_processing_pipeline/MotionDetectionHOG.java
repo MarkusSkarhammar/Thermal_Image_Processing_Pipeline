@@ -62,6 +62,7 @@ public class MotionDetectionHOG {
         // Show sensor type.
         Imgproc.putText(currentFrame, "HOG", new Point(5, 270), Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0,255,255),2);
 
+        // Display frame.
         Utils.matToBitmap(currentFrame, b);
         image.setProcessedBitmap(b);
 
