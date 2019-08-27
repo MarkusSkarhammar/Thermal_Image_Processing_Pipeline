@@ -21,6 +21,7 @@ import com.Network.thermal_image_processing_pipeline.SSHConnection;
 import com.Network.thermal_image_processing_pipeline.TCPClient;
 import com.google.android.material.textfield.TextInputEditText;
 import com.log.log;
+import com.pipeline.thermal_image_processing_pipeline.FalseColor;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionHOG;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionMNET;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionS;
@@ -69,12 +70,15 @@ public class MainActivity extends AppCompatActivity {
     public static int sensorType = 0;
     public static boolean sensorChange = false;
 
-    //Denoise
+    // Denoise
     public static boolean denoising = true;
-    //Shutter and gain
+    // Shutter and gain
     public static boolean shutterGain = true;
-    //CLAHE
+    // CLAHE
     public static boolean CLAHE = true;
+
+    // Display False Color toggle.
+    public static boolean FalseColor = false;
 
     //14-bit conversion
     public static double offset14bit = 0.;
@@ -190,6 +194,11 @@ public class MainActivity extends AppCompatActivity {
                                 sMC.detect(imageTemp);
                             }
 
+                            if (FalseColor == true) {
+                                com.pipeline.thermal_image_processing_pipeline.FalseColor.color(imageTemp);
+                            }
+
+
                         }
                     }else if(imageStreamOffline.size() > 0){
                         timeStampStart = System.currentTimeMillis();
@@ -215,9 +224,14 @@ public class MainActivity extends AppCompatActivity {
                             sMC.detect(imageTemp);
                         }
 
+                        if (FalseColor == true) {
+                            com.pipeline.thermal_image_processing_pipeline.FalseColor.color(imageTemp);
+                        }
+
                         pos++;
                         if(pos >= imageStreamOffline.size()) pos=0;
                     }
+
                     if(imageStream.size() > 0)
                         gui.updateView(MainActivity.this, imgView);
                 }

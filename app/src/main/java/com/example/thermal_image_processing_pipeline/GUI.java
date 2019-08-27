@@ -19,6 +19,7 @@ import static com.example.thermal_image_processing_pipeline.MainActivity.sensorT
 import static com.example.thermal_image_processing_pipeline.MainActivity.shutterGain;
 import static com.example.thermal_image_processing_pipeline.MainActivity.stream;
 import static com.example.thermal_image_processing_pipeline.MainActivity.threshold_value;
+import static com.example.thermal_image_processing_pipeline.MainActivity.FalseColor;
 
 public class GUI {
 
@@ -123,6 +124,22 @@ public class GUI {
                 }
             });
         }
+
+        //Setup False Color toggle
+        {
+            final Switch FalseColorToggle = a.findViewById(R.id.FalseColor);
+            FalseColorToggle.setChecked(false);
+            FalseColorToggle.setOnClickListener( new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    FalseColor = !FalseColor;
+                }
+            });
+        }
+
+
+
     }
 
     /**

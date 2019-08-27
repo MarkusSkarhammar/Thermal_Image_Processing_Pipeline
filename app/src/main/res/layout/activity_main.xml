@@ -158,6 +158,13 @@
                         android:layout_weight="1"
                         android:text="Denoise" />
 
+                    <Switch
+                        android:id="@+id/FalseColor"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="False Color" />
+
                     <TextView
                         android:id="@+id/thresholdText"
                         android:layout_width="match_parent"
