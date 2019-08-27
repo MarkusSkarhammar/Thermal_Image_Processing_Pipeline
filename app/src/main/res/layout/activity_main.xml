@@ -126,14 +126,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Sensor type:" />
+                        android:text="Sensor type" />
 
                     <SeekBar
                         android:id="@+id/seekBarSensorType"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:max="2" />
+                        android:max="4" />
 
                     <Switch
                         android:id="@+id/ShuttterGain"
