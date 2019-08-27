@@ -11,12 +11,7 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -26,7 +21,7 @@ import static com.example.thermal_image_processing_pipeline.MainActivity.str_w;
 
 public class SSHConnection {
 
-    private static final String defaultDirectory = "/var/volatile/cache/recorder/";
+    private static final String CAMERA_DIRECTORY = "/var/volatile/cache/recorder/";
 
     public static void getShutter(String username, String password, String hostname) {
 
@@ -57,7 +52,7 @@ public class SSHConnection {
 
             // Execute command
 
-            channelssh.setCommand("killall rawtool ; cd " + defaultDirectory + " ; catch_raw_image -k 8 ; rawtool -s -p 1234 &");
+            channelssh.setCommand("killall rawtool ; cd " + CAMERA_DIRECTORY + " ; catch_raw_image -k 8 ; rawtool -s -p 1234 &");
             channelssh.connect();
             channelssh.disconnect();
 
@@ -65,19 +60,19 @@ public class SSHConnection {
             channel.connect();
 
             sftpChannel = (ChannelSftp) channel;
-            sftpChannel.cd(defaultDirectory);
+            sftpChannel.cd(CAMERA_DIRECTORY);
 
             File sdcard = Environment.getExternalStorageDirectory();
 
             Vector<ChannelSftp.LsEntry> list = sftpChannel.ls("*.pgm");
 
-            while(list.size() < 7) {
+            while(list.size() < MainActivity.NBR_SHUTTER_IMAGES) {
                 Thread.sleep(500);
                 list = sftpChannel.ls("*.pgm");
             }
 
             for(ChannelSftp.LsEntry entry : list) {
-                sftpChannel.get(defaultDirectory + entry.getFilename(), sdcard + "/Download/shutter" + (pos++) + ".pgm");
+                sftpChannel.get(CAMERA_DIRECTORY + entry.getFilename(), sdcard + "/Download/shutter" + (pos++) + ".pgm");
             }
 
             while(list.size() > 0) {
@@ -108,7 +103,7 @@ public class SSHConnection {
                 sftpChannel.disconnect();
             }
 
-            channelssh.setCommand("rm " + defaultDirectory + "*.pgm");
+            channelssh.setCommand("rm " + CAMERA_DIRECTORY + "*.pgm");
             try{
                 channelssh.connect();
                 channelssh.disconnect();
@@ -172,7 +167,7 @@ public class SSHConnection {
         ChannelExec channelssh = (ChannelExec) session.openChannel("exec");
         channelssh.setInputStream(null);
 
-        channelssh.setCommand("killall rawtool ; irfpgactrl --data_sel=6 --noise_flt_on=0 --dpc_on=0 ; /usr/bin/rawtool -s -p 1234 & ; rm " + defaultDirectory + "*.pgm");
+        channelssh.setCommand("killall rawtool ; irfpgactrl --data_sel=6 --noise_flt_on=0 --dpc_on=0 ; /usr/bin/rawtool -s -p 1234 & ; rm " + CAMERA_DIRECTORY + "*.pgm");
         channelssh.connect();
         channelssh.disconnect();
 
@@ -181,7 +176,7 @@ public class SSHConnection {
 
         ChannelSftp sftpChannel = null;
         sftpChannel = (ChannelSftp) channel;
-        sftpChannel.cd(defaultDirectory);
+        sftpChannel.cd(CAMERA_DIRECTORY);
 
         Vector<ChannelSftp.LsEntry> list = sftpChannel.ls("*.pgm");
 
