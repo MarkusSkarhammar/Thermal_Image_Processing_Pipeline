@@ -185,13 +185,13 @@ public class MainActivity extends AppCompatActivity {
                             log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
                             if (MainActivity.sensorType == 1) {
-                                mdS.detect(imageTemp);
-                            } else if(MainActivity.sensorType == 2){
-                                mdHOG.detect(imageTemp);
-                            } else if(MainActivity.sensorType == 3){
-                                mdMNET.detect(imageTemp);
-                            } else if(MainActivity.sensorType == 4){
                                 sMC.detect(imageTemp);
+                            } else if(MainActivity.sensorType == 2){
+                                mdS.detect(imageTemp);
+                            } else if(MainActivity.sensorType == 3){
+                                mdHOG.detect(imageTemp);
+                            } else if(MainActivity.sensorType == 4){
+                                mdMNET.detect(imageTemp);
                             }
 
                             if (FalseColor == true) {
@@ -215,13 +215,13 @@ public class MainActivity extends AppCompatActivity {
                         log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
                         if (MainActivity.sensorType == 1) {
-                            mdS.detect(imageTemp);
-                        } else if(MainActivity.sensorType == 2){
-                            mdHOG.detect(imageTemp);
-                        } else if(MainActivity.sensorType == 3){
-                            mdMNET.detect(imageTemp);
-                        } else if(MainActivity.sensorType == 4){
                             sMC.detect(imageTemp);
+                        } else if(MainActivity.sensorType == 2){
+                            mdS.detect(imageTemp);
+                        } else if(MainActivity.sensorType == 3){
+                            mdHOG.detect(imageTemp);
+                        } else if(MainActivity.sensorType == 4){
+                            mdMNET.detect(imageTemp);
                         }
 
                         if (FalseColor == true) {
@@ -361,10 +361,10 @@ public class MainActivity extends AppCompatActivity {
                     dataIndex += 2;
                 }
                 //temp = (int)((temp + offset14bit)/gain14bit);
-                if(shutterGain) temp = (int)( (float)( (temp - (shutterValues[(h*str_w) + w] * gain14bit))) * gain[(h*str_w) + w] + (mean * gain14bit));
-                //tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
-                colorValue = (int)(((double)temp / 4096.0) * 255);
                 tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
+                if(shutterGain) temp = (int)( (float)( (temp - (shutterValues[(h*str_w) + w] * gain14bit))) * gain[(h*str_w) + w] + (mean * gain14bit));
+                colorValue = (int)(((double)temp / 4096.0) * 255);
+                // tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
                 tempData[((h-hFrom)*str_w) + (w-wFrom)] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
             }
 
