@@ -48,10 +48,10 @@ public class SensorMeasureCenter {
             }
         }
 
-        value = value / loops;              // Doesn't seem to be working as it should. Find out why and fix this.
+        value = value / loops;
 
         // Convert image to something OpenCV can handle.
-        Bitmap b = DisplayHandler.generateBitmapFromPGM(image);
+        Bitmap b = image.getProcessedBitmap();
         Mat currentFrame = new Mat(b.getWidth(), b.getHeight(), CV_8UC1);
         Utils.bitmapToMat(b, currentFrame);
 
@@ -61,10 +61,11 @@ public class SensorMeasureCenter {
         // Show sensor type.
         Imgproc.putText(currentFrame, "CENTER: " + value, new Point(5, 270), Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0,255,255),2);
 
+        // Draw crosshair
         Imgproc.rectangle(currentFrame, new Point(start_width - 1, start_height - 1), new Point(start_width + pixels + 1, start_height + pixels + 1), new Scalar(0, 255, 0));
 
         // Display frame.
         Utils.matToBitmap(currentFrame, b);
-        image.setProcessedBitmap(b);
+
     }
 }
