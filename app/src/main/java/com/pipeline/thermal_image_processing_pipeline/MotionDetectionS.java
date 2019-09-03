@@ -51,7 +51,7 @@ public class MotionDetectionS {
     public void detect(PGMImage image) {
 
         // Convert image to something OpenCV can handle.
-        Bitmap b = DisplayHandler.generateBitmapFromPGM(image);
+        Bitmap b = image.getProcessedBitmap();
         Mat currentFrame = new Mat(b.getWidth(), b.getHeight(), CV_8UC1);
         Utils.bitmapToMat(b, currentFrame);
 
@@ -108,7 +108,6 @@ public class MotionDetectionS {
 
         // Display frame.
         Utils.matToBitmap(originalFrame, b);
-        image.setProcessedBitmap(b);
 
     }
 }

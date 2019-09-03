@@ -36,7 +36,7 @@ public class MotionDetectionHOG {
     public void detect(PGMImage image) {
 
         // Convert image to something OpenCV can handle.
-        Bitmap b = DisplayHandler.generateBitmapFromPGM(image);
+        Bitmap b = image.getProcessedBitmap();
         Mat currentFrame = new Mat(b.getWidth(), b.getHeight(), CV_8UC1);
         Utils.bitmapToMat(b, currentFrame);
 
@@ -64,7 +64,6 @@ public class MotionDetectionHOG {
 
         // Display frame.
         Utils.matToBitmap(currentFrame, b);
-        image.setProcessedBitmap(b);
 
     }
 
