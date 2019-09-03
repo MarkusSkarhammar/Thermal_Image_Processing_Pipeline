@@ -21,7 +21,7 @@ public class PGMImage {
         this.width = 384;
         this.height = 288;
         this.dataList = dataList;
-        this.dataListRaw = dataList;
+        this.dataListRaw = dataListRaw;
     }
 
     public PGMImage(int[] dataList){
