@@ -13,7 +13,7 @@ public class log {
     private static TextView output;
     private static Activity a;
     private static ArrayList<String> inputs = new ArrayList<>();
-    public static long getImageDataTime, processImageDataTime, FPSTimeStamp = 0, shutterAndGainTime = 0, CLAHETime = 0, denoiseTime = 0, filterTime = 0;
+    public static long imageDataTime, processImageTime, getImageDataTime, processImageDataTime, FPSTimeStamp = 0, shutterAndGainTime = 0, CLAHETime = 0, denoiseTime = 0, filterTime = 0;
     public static int amountInStream, totalImageAmount, imageCount, FPS;
 
     public static void setTextView(final TextView tv){
@@ -26,10 +26,12 @@ public class log {
 
     public static void setGetImageDataTime(final long input){
         getImageDataTime = input;
+        imageDataTime += input;
     }
 
     public static void setProcessImageDataTime(final long input){
         processImageDataTime = input;
+        processImageTime += input;
     }
 
     public static void setAmountInStream(final int input){
@@ -43,6 +45,8 @@ public class log {
             public void run() {
                 output.setText("Time to get image data: " +getImageDataTime + "\nTime to process image data: " + processImageDataTime +  "\nAmount in stream: " + amountInStream +
                         "\nFPS: " + FPS +
+                        "\nAverage time for retrieving data: " + (imageDataTime / totalImageAmount) + " ms." +
+                        "\nAverage time for processing data: " + (processImageTime / totalImageAmount) + " ms." +
                         "\nAverage time for shutter and gain: " + (shutterAndGainTime/totalImageAmount) + " ms." +
                         "\nAverage time for CLAHE: " + (CLAHETime/totalImageAmount) + " ms." +
                         "\nAverage time to denoise: " + (CLAHETime/totalImageAmount) + " ms." +
