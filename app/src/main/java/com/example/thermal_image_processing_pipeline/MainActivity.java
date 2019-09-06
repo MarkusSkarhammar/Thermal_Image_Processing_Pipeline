@@ -6,22 +6,13 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.SeekBar;
-import android.widget.Switch;
-import android.widget.TextView;
 
-import com.Network.thermal_image_processing_pipeline.SSHConnection;
 import com.Network.thermal_image_processing_pipeline.TCPClient;
-import com.google.android.material.textfield.TextInputEditText;
 import com.log.log;
-import com.pipeline.thermal_image_processing_pipeline.FalseColor;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionHOG;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionMNET;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionS;
@@ -161,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
 
                 MotionDetectionS mdS = new MotionDetectionS();
                 MotionDetectionHOG mdHOG = new MotionDetectionHOG();
-                MotionDetectionMNET mdMNET = new MotionDetectionMNET();
+                MotionDetectionMNET mdMNET = new MotionDetectionMNET(getAssets(), getFilesDir());
                 SensorMeasureCenter sMC = new SensorMeasureCenter();
 
                 int pos = 0;
