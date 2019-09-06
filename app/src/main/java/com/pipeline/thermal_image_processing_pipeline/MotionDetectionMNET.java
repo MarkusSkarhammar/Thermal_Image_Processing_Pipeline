@@ -1,10 +1,9 @@
 package com.pipeline.thermal_image_processing_pipeline;
 
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.os.Environment;
 import android.util.Log;
 
-import com.example.thermal_image_processing_pipeline.DisplayHandler;
 import com.example.thermal_image_processing_pipeline.MainActivity;
 import com.example.thermal_image_processing_pipeline.PGMImage;
 
@@ -16,6 +15,11 @@ import org.opencv.core.Size;
 import org.opencv.dnn.Net;
 import org.opencv.dnn.Dnn;
 import org.opencv.imgproc.Imgproc;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import static org.opencv.core.CvType.CV_8UC1;
 
@@ -45,13 +49,35 @@ public class MotionDetectionMNET {
             "sheep", "sofa", "train", "tvmonitor"};
     private Net net;
 
-    public MotionDetectionMNET() {
-        String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Download/";
 
-        String proto = path + "MobileNetSSD_deploy.prototxt";
-        String weights = path + "MobileNetSSD_deploy.caffemodel";
+    public MotionDetectionMNET(AssetManager assets, File filesDir) {
+
+        String proto = getPath("MobileNetSSD_deploy.prototxt", assets, filesDir);
+        String weights = getPath("MobileNetSSD_deploy.caffemodel", assets, filesDir);
         net = Dnn.readNetFromCaffe(proto, weights);
         Log.i(TAG, "Network loaded successfully");
+
+    }
+
+    // Upload file to storage and return a path.
+    private static String getPath(String file, AssetManager assets, File filesDir) {
+        try {
+            // Read data from assets.
+            BufferedInputStream inputStream = new BufferedInputStream(assets.open(file));
+            byte[] data = new byte[inputStream.available()];
+            inputStream.read(data);
+            inputStream.close();
+            // Create copy file in storage.
+            File outFile = new File(filesDir, file);
+            FileOutputStream os = new FileOutputStream(outFile);
+            os.write(data);
+            os.close();
+            // Return a path to file which may be read in common way.
+            return outFile.getAbsolutePath();
+        } catch (IOException ex) {
+            Log.i(TAG, "Failed to upload a file");
+        }
+        return "";
     }
 
     public void detect(PGMImage image) {
