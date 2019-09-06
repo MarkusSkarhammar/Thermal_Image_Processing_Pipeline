@@ -29,7 +29,7 @@ public class FalseColor {
 
         // Display frame.
         Utils.matToBitmap(currentFrame, b);
-        image.setProcessedBitmap(b);
+
     }
 
 }
