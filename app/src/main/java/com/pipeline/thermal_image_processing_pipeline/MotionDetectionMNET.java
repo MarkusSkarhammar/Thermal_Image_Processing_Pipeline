@@ -116,5 +116,4 @@ public class MotionDetectionMNET {
         Utils.matToBitmap(currentFrame, b);
 
     }
-
 }
