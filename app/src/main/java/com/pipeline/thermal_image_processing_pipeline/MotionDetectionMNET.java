@@ -40,7 +40,7 @@ public class MotionDetectionMNET {
 
     */
 
-    private static final String TAG = "OpenCV/Sample/MobileNet";
+    private static final String TAG = "OpenCV/MobileNet";
     private static final String[] classNames = {"background",
             "aeroplane", "bicycle", "bird", "boat",
             "bottle", "bus", "car", "cat", "chair",
@@ -48,7 +48,6 @@ public class MotionDetectionMNET {
             "motorbike", "person", "pottedplant",
             "sheep", "sofa", "train", "tvmonitor"};
     private Net net;
-
 
     public MotionDetectionMNET(AssetManager assets, File filesDir) {
 
@@ -62,21 +61,26 @@ public class MotionDetectionMNET {
     // Upload file to storage and return a path.
     private static String getPath(String file, AssetManager assets, File filesDir) {
         try {
+
             // Read data from assets.
             BufferedInputStream inputStream = new BufferedInputStream(assets.open(file));
             byte[] data = new byte[inputStream.available()];
             inputStream.read(data);
             inputStream.close();
+
             // Create copy file in storage.
             File outFile = new File(filesDir, file);
             FileOutputStream os = new FileOutputStream(outFile);
             os.write(data);
             os.close();
+
             // Return a path to file which may be read in common way.
             return outFile.getAbsolutePath();
+
         } catch (IOException ex) {
             Log.i(TAG, "Failed to upload a file");
         }
+
         return "";
     }
 
@@ -84,7 +88,7 @@ public class MotionDetectionMNET {
 
         final int IN_WIDTH = MainActivity.str_w;
         final int IN_HEIGHT = MainActivity.str_h;
-        final float WH_RATIO = (float)IN_WIDTH / IN_HEIGHT;
+        //final float WH_RATIO = (float)IN_WIDTH / IN_HEIGHT;
         final double IN_SCALE_FACTOR = 0.007843;
         final double MEAN_VAL = 127.5;
         final double THRESHOLD = 0.2;
@@ -100,7 +104,7 @@ public class MotionDetectionMNET {
         // Forward image through network.
         Mat blob = Dnn.blobFromImage(currentFrame, IN_SCALE_FACTOR,
                 new Size(IN_WIDTH, IN_HEIGHT),
-                new Scalar(MEAN_VAL, MEAN_VAL, MEAN_VAL), /*swapRB*/false, /*crop*/false);
+                new Scalar(MEAN_VAL, MEAN_VAL, MEAN_VAL), false, false);
         net.setInput(blob);
         Mat detections = net.forward();
         int cols = currentFrame.cols();
@@ -109,23 +113,27 @@ public class MotionDetectionMNET {
         detections = detections.reshape(1, (int)detections.total() / 7);
 
         for (int i = 0; i < detections.rows(); ++i) {
+
             double confidence = detections.get(i, 2)[0];
+
             if (confidence > THRESHOLD) {
                 int classId = (int)detections.get(i, 1)[0];
                 int left   = (int)(detections.get(i, 3)[0] * cols);
                 int top    = (int)(detections.get(i, 4)[0] * rows);
                 int right  = (int)(detections.get(i, 5)[0] * cols);
                 int bottom = (int)(detections.get(i, 6)[0] * rows);
+
                 // Draw rectangle around detected object.
-                Imgproc.rectangle(currentFrame, new Point(left, top), new Point(right, bottom),
-                        new Scalar(0, 255, 0));
+                Imgproc.rectangle(currentFrame, new Point(left, top), new Point(right, bottom), new Scalar(0, 255, 0));
                 String label = classNames[classId] + ": " + confidence;
                 int[] baseLine = new int[1];
                 Size labelSize = Imgproc.getTextSize(label, Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, 1, baseLine);
+
                 // Draw background for label.
                 Imgproc.rectangle(currentFrame, new Point(left, top - labelSize.height),
                         new Point(left + labelSize.width, top + baseLine[0]),
                         new Scalar(255, 255, 255), Imgproc.FILLED);
+
                 // Write class name and confidence.
                 Imgproc.putText(currentFrame, label, new Point(left, top),
                         Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 0, 0));
