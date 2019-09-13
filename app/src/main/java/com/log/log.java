@@ -1,9 +1,16 @@
 package com.log;
 
 import android.app.Activity;
+import android.os.Environment;
 import android.widget.TextView;
 
 
+import com.example.thermal_image_processing_pipeline.MainActivity;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -15,6 +22,7 @@ public class log {
     private static ArrayList<String> inputs = new ArrayList<>();
     public static long imageDataTime, processImageTime, getImageDataTime, processImageDataTime, FPSTimeStamp = 0, shutterAndGainTime = 0, CLAHETime = 0, denoiseTime = 0, filterTime = 0;
     public static int amountInStream, totalImageAmount, imageCount, FPS;
+    public static long startTime, stopTime;
 
     public static void setTextView(final TextView tv){
         output = tv;
@@ -51,7 +59,11 @@ public class log {
                         "\nAverage time for CLAHE: " + (CLAHETime/totalImageAmount) + " ms." +
                         "\nAverage time to denoise: " + (CLAHETime/totalImageAmount) + " ms." +
                         "\nAverage time to apply filter: " + (filterTime/totalImageAmount) + " ms." +
-                        "\nTotal images processed: " + totalImageAmount);
+                        "\nTotal images processed: " + totalImageAmount +
+                        "\n\n");
+
+                //logToFile();
+
             }
         });
     }
@@ -64,6 +76,52 @@ public class log {
             imageCount = 0;
             FPSTimeStamp = System.currentTimeMillis();
         }
+    }
+
+    private static void logToFile() {
+
+        if (startTime == 0) {
+            startTime = System.currentTimeMillis();
+        }
+
+        if (totalImageAmount == 10000) {
+
+            stopTime = System.currentTimeMillis();
+
+            long runTime = (stopTime - startTime);
+            long seconds = (runTime / 1000) % 60;
+            long minutes = ((runTime / (1000*60)) % 60);
+            long hours = ((runTime / (1000*60*60)) % 24);
+
+            double runTimeInSecs = runTime / 1000.0;
+            double averageFPS = totalImageAmount / runTimeInSecs;
+
+            String filename = "Tinkerboard S - Basic settings and MobileNet.txt";
+
+            File sdcard = Environment.getExternalStorageDirectory();
+            File file = new File(sdcard, "/Download/" + filename);
+
+            try {
+                BufferedOutputStream outFile = new BufferedOutputStream(new FileOutputStream(file, true));
+                outFile.write(("Time to get image data: " +getImageDataTime +
+                        "\r\nTime to process image data: " + processImageDataTime +
+                        "\r\nAmount in stream: " + amountInStream +
+                        "\r\nFPS: " + FPS +
+                        "\r\nAverage time for retrieving data: " + (imageDataTime / totalImageAmount) + " ms." +
+                        "\r\nAverage time for processing data: " + (processImageTime / totalImageAmount) + " ms." +
+                        "\r\nAverage time for shutter and gain: " + (shutterAndGainTime/totalImageAmount) + " ms." +
+                        "\r\nAverage time for CLAHE: " + (CLAHETime/totalImageAmount) + " ms." +
+                        "\r\nAverage time to denoise: " + (CLAHETime/totalImageAmount) + " ms." +
+                        "\r\nAverage time to apply filter: " + (filterTime/totalImageAmount) + " ms." +
+                        "\r\nTotal images processed: " + totalImageAmount +
+                        "\r\nTotal run time: " + runTime + " ms (" + hours + " h " + minutes + " min " + seconds + " sec) " +
+                        "\r\nAverage FPS: " + averageFPS).getBytes());
+                outFile.close();
+            } catch (IOException e) {
+                // Do nothing.
+            }
+        }
+
     }
 
 }
