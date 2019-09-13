@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import com.log.log;
 
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
@@ -108,53 +109,100 @@ public class OpenCVHandler {
 
     private void Sharpening(Mat src, int progress){
         if(progress != 0){
-            Mat array = new Mat(3, 3, CV_16SC1);
-            //int[][] array = null;
-            if(progress == 3){
 
-                array.put(0 , 0, -1);
-                array.put(1 , 0, -1);
-                array.put(2 , 0, -1);
+            Mat kernel = new Mat(3, 3, CV_16SC1);
 
-                array.put(0 , 1, -1);
-                array.put(1 , 1,  9);
-                array.put(2 , 1, -1);
+            if (progress == 1) {
 
-                array.put(0 , 2, -1);
-                array.put(1 , 2, -1);
-                array.put(2 , 2, -1);
+                // Minor sharpening.
 
+                kernel.put(0 , 0, 0);
+                kernel.put(0 , 1, -1);
+                kernel.put(0 , 2, 0);
 
-            }else if(progress == 2){
+                kernel.put(1 , 0, -1);
+                kernel.put(1 , 1,  5);
+                kernel.put(1 , 2, -1);
 
-                array.put(0 , 0, 0);
-                array.put(1 , 0, -1);
-                array.put(2 , 0, 0);
+                kernel.put(2 , 0, 0);
+                kernel.put(2 , 1, -1);
+                kernel.put(2 , 2, 0);
 
-                array.put(0 , 1, -1);
-                array.put(1 , 1,  5);
-                array.put(2 , 1, -1);
+            } else if (progress == 2) {
 
-                array.put(0 , 2, 0);
-                array.put(1 , 2, -1);
-                array.put(2 , 2, 0);
+                // Sharpening.
 
-            }else if(progress == 1){
-                array.put(0 , 0, 1);
-                array.put(1 , 0, 1);
-                array.put(2 , 0, 1);
+                kernel.put(0 , 0, -1);
+                kernel.put(0 , 1, -1);
+                kernel.put(0 , 2, -1);
 
-                array.put(0 , 1, 1);
-                array.put(1 , 1,  -7);
-                array.put(2 , 1, 1);
+                kernel.put(1 , 0, -1);
+                kernel.put(1 , 1,  9);
+                kernel.put(1 , 2, -1);
 
-                array.put(0 , 2, 1);
-                array.put(1 , 2, 1);
-                array.put(2 , 2, 1);
+                kernel.put(2 , 0, -1);
+                kernel.put(2 , 1, -1);
+                kernel.put(2 , 2, -1);
+
+            } else if (progress == 3) {
+
+                // Excessive sharpening.
+
+                kernel.put(0 , 0, 1);
+                kernel.put(1 , 0, 1);
+                kernel.put(2 , 0, 1);
+
+                kernel.put(0 , 1, 1);
+                kernel.put(1 , 1,  -7);
+                kernel.put(2 , 1, 1);
+
+                kernel.put(0 , 2, 1);
+                kernel.put(1 , 2, 1);
+                kernel.put(2 , 2, 1);
+
+                /*
+
+                // Edge enhancement.
+                // NOTE: Doesn't work. Black image.
+
+                kernel = new Mat(5, 5, CvType.CV_16SC1);
+
+                kernel.put(0, 0, -1);
+                kernel.put(0, 1, -1);
+                kernel.put(0, 2, -1);
+                kernel.put(0, 3, -1);
+                kernel.put(0, 4, -1);
+
+                kernel.put(1, 0, -1);
+                kernel.put(1, 1, 2);
+                kernel.put(1, 2, 2);
+                kernel.put(1, 3, 2);
+                kernel.put(1, 4, -1);
+
+                kernel.put(2, 0, -1);
+                kernel.put(2, 1, 2);
+                kernel.put(2, 2, 8);
+                kernel.put(2, 3, 2);
+                kernel.put(2, 4, -1);
+
+                kernel.put(3, 0, -1);
+                kernel.put(3, 1, 2);
+                kernel.put(3, 2, 2);
+                kernel.put(3, 3, 2);
+                kernel.put(3, 4, -1);
+
+                kernel.put(4, 0, -1);
+                kernel.put(4, 1, -1);
+                kernel.put(4, 2, -1);
+                kernel.put(4, 3, -1);
+                kernel.put(4, 4, -1);
+
+                Core.divide(1.0/8.0, kernel, kernel);
+                */
+
             }
 
-            Imgproc.filter2D(src, src, src.depth(), array);
-
+            Imgproc.filter2D(src, src, src.depth(), kernel);
 
         }
     }
