@@ -80,11 +80,11 @@ public class log {
 
     private static void logToFile() {
 
-        if (startTime == 0) {
+        if (startTime == 0 && totalImageAmount != 0) {
             startTime = System.currentTimeMillis();
         }
 
-        if (totalImageAmount == 10000) {
+        if (totalImageAmount == 1000) {
 
             stopTime = System.currentTimeMillis();
 
@@ -96,7 +96,7 @@ public class log {
             double runTimeInSecs = runTime / 1000.0;
             double averageFPS = totalImageAmount / runTimeInSecs;
 
-            String filename = "Tinkerboard S - Basic settings and MobileNet.txt";
+            String filename = "Basic settings only.txt";
 
             File sdcard = Environment.getExternalStorageDirectory();
             File file = new File(sdcard, "/Download/" + filename);
