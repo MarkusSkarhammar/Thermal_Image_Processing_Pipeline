@@ -1,6 +1,5 @@
 package com.example.thermal_image_processing_pipeline;
 
-import android.widget.ImageView;
 import android.widget.SeekBar;
 
 
@@ -64,7 +63,7 @@ public class SeekBarListener implements SeekBar.OnSeekBarChangeListener {
      * Switch from motion sensor to human detection sensor (or vice versa).
      */
     private void changeSensor(int progress){
-        MainActivity.sensorType = progress;
-        MainActivity.sensorChange = true;
+        MainActivity.detectionType = progress;
+        MainActivity.detectionTypeChange = true;
     }
 }

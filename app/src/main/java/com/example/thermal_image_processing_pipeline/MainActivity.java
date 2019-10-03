@@ -13,12 +13,12 @@ import android.widget.ImageView;
 
 import com.Network.thermal_image_processing_pipeline.TCPClient;
 import com.log.log;
+import com.pipeline.thermal_image_processing_pipeline.MeasureCenter;
+import com.pipeline.thermal_image_processing_pipeline.MotionDetectionBFS;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionHOG;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionMNET;
-import com.pipeline.thermal_image_processing_pipeline.MotionDetectionS;
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
 import com.pipeline.thermal_image_processing_pipeline.RawImageData;
-import com.pipeline.thermal_image_processing_pipeline.SensorMeasureCenter;
 
 import java.util.ArrayList;
 
@@ -58,8 +58,8 @@ public class MainActivity extends AppCompatActivity {
 
     // Motion sensor stuff.
     public static int threshold_value = 25, contourArea_value = 500;
-    public static int sensorType = 0;
-    public static boolean sensorChange = false;
+    public static int detectionType = 0;
+    public static boolean detectionTypeChange = false;
 
     // Denoise
     public static boolean denoising = true;
@@ -79,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
     public static long shutterTimeStamp = 0;
     public static long shutterTimeInterval = 12*60*1000;
     public static int NBR_SHUTTER_IMAGES = 8;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,10 +149,10 @@ public class MainActivity extends AppCompatActivity {
                 long timeStampStart, timeStampStart2, timeStampEnd;
                 ImageView imgView = findViewById(R.id.imageView1);
 
-                MotionDetectionS mdS = new MotionDetectionS();
+                MotionDetectionBFS mdS = new MotionDetectionBFS();
                 MotionDetectionHOG mdHOG = new MotionDetectionHOG();
                 MotionDetectionMNET mdMNET = new MotionDetectionMNET(getAssets(), getFilesDir());
-                SensorMeasureCenter sMC = new SensorMeasureCenter();
+                MeasureCenter sMC = new MeasureCenter();
 
                 int pos = 0;
 
@@ -175,13 +174,13 @@ public class MainActivity extends AppCompatActivity {
                             timeStampEnd = System.currentTimeMillis();
                             log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
-                            if (MainActivity.sensorType == 1) {
+                            if (MainActivity.detectionType == 1) {
                                 sMC.detect(imageTemp);
-                            } else if(MainActivity.sensorType == 2){
+                            } else if(MainActivity.detectionType == 2){
                                 mdS.detect(imageTemp);
-                            } else if(MainActivity.sensorType == 3){
+                            } else if(MainActivity.detectionType == 3){
                                 mdHOG.detect(imageTemp);
-                            } else if(MainActivity.sensorType == 4){
+                            } else if(MainActivity.detectionType == 4){
                                 mdMNET.detect(imageTemp);
                             }
 
@@ -205,13 +204,13 @@ public class MainActivity extends AppCompatActivity {
                         timeStampEnd = System.currentTimeMillis();
                         log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
-                        if (MainActivity.sensorType == 1) {
+                        if (MainActivity.detectionType == 1) {
                             sMC.detect(imageTemp);
-                        } else if(MainActivity.sensorType == 2){
+                        } else if(MainActivity.detectionType == 2){
                             mdS.detect(imageTemp);
-                        } else if(MainActivity.sensorType == 3){
+                        } else if(MainActivity.detectionType == 3){
                             mdHOG.detect(imageTemp);
-                        } else if(MainActivity.sensorType == 4){
+                        } else if(MainActivity.detectionType == 4){
                             mdMNET.detect(imageTemp);
                         }
 

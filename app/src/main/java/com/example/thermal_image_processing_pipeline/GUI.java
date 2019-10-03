@@ -15,7 +15,6 @@ import static com.example.thermal_image_processing_pipeline.MainActivity.CLAHE;
 import static com.example.thermal_image_processing_pipeline.MainActivity.contourArea_value;
 import static com.example.thermal_image_processing_pipeline.MainActivity.denoising;
 import static com.example.thermal_image_processing_pipeline.MainActivity.imageStream;
-import static com.example.thermal_image_processing_pipeline.MainActivity.sensorType;
 import static com.example.thermal_image_processing_pipeline.MainActivity.shutterGain;
 import static com.example.thermal_image_processing_pipeline.MainActivity.stream;
 import static com.example.thermal_image_processing_pipeline.MainActivity.threshold_value;
@@ -192,9 +191,9 @@ public class GUI {
                     }
 
                     /*
-                    if(MainActivity.sensorChange = true){
+                    if(MainActivity.detectionTypeChange = true){
                         TextView textView = a.findViewById(R.id.SensorTypeText);
-                        switch (sensorType){
+                        switch (detectionType){
                             case 0:
                                 textView.setText("Sensor type: motion detection");
                                 break;
@@ -205,7 +204,7 @@ public class GUI {
                                 textView.setText("Sensor type: none");
                                 break;
                         }
-                        MainActivity.sensorChange = false;
+                        MainActivity.detectionTypeChange = false;
                     }
                     */
 
