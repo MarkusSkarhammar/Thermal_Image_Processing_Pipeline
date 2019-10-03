@@ -14,7 +14,7 @@ import org.opencv.imgproc.Imgproc;
 
 import static org.opencv.core.CvType.CV_8UC1;
 
-public class SensorMeasureCenter {
+public class MeasureCenter {
 
     /*
 
@@ -22,12 +22,12 @@ public class SensorMeasureCenter {
 
     In order to use, see the following example code:
 
-        SensorMeasureCenter sMC = new SensorMeasureCenter();
+        MeasureCenter sMC = new MeasureCenter();
         sMC.detect(imageTemp);
 
      */
 
-    public SensorMeasureCenter() {
+    public MeasureCenter() {
     }
 
     public void detect(PGMImage image) {
