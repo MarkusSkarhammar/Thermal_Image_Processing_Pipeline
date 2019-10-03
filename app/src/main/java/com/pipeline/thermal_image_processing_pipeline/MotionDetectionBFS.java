@@ -24,7 +24,7 @@ import static org.opencv.imgproc.Imgproc.COLORMAP_HOT;
 import static org.opencv.imgproc.Imgproc.COLORMAP_HSV;
 import static org.opencv.imgproc.Imgproc.COLORMAP_JET;
 
-public class MotionDetectionS {
+public class MotionDetectionBFS {
 
     /*
 
@@ -32,7 +32,7 @@ public class MotionDetectionS {
 
         In order to use, see the following example code:
 
-            MotionDetectionS md = new MotionDetectionS();
+            MotionDetectionBFS md = new MotionDetectionBFS();
             md.detect(imageTemp);
 
      */
@@ -41,7 +41,7 @@ public class MotionDetectionS {
     private long timeStampStart;
     private final int BACKGROUND_RESET_TIME = 5;
 
-    public MotionDetectionS() {
+    public MotionDetectionBFS() {
     }
 
     public void clearBackgroundFrame() {
