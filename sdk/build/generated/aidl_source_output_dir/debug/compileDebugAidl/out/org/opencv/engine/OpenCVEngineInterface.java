@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: C:\\Users\\markussk\\StudioProjects\\Thermal_Image_Processing_Pipeline\\sdk\\java\\src\\org\\opencv\\engine\\OpenCVEngineInterface.aidl
+ * Original file: C:\\Users\\linki\\StudioProjects\\Thermal_Image_Processing_Pipeline\\sdk\\java\\src\\org\\opencv\\engine\\OpenCVEngineInterface.aidl
  */
 package org.opencv.engine;
 /**

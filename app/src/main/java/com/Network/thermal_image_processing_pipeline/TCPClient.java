@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.example.thermal_image_processing_pipeline.MainActivity;
 import com.log.log;
+import com.pipeline.thermal_image_processing_pipeline.RawImageData;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -31,6 +32,9 @@ public class TCPClient {
     // used to read messages from the server
     private DataInputStream bufferIn;
 
+    //
+    public static boolean ERROR_SSH_SHUTTER_TRANSFER = false;
+
     public TCPClient(){
 
     }
@@ -39,15 +43,35 @@ public class TCPClient {
      * Start stream.
      */
     public void StartReadingRawStream(){
-        try {
 
-            // Get shutter and gain
-            try {
-                SSHConnection.getGain("root", "pass", "192.168.0.90");
-                SSHConnection.getShutter("root", "pass", "192.168.0.90");
-            } catch (Exception e) {
-                e.printStackTrace();
+        // Start camera
+        try {
+            SSHConnection.startCamera("root", "pass", "192.168.0.90");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Get Gain
+        try {
+            if(MainActivity.shutterTimeStamp == 0)SSHConnection.getGain("root", "pass", "192.168.0.90");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        while(true){
+            // Get shutter
+            SSHConnection.getShutter("root", "pass", "192.168.0.90");
+            if(!ERROR_SSH_SHUTTER_TRANSFER){
+                MainActivity.shutterTimeStamp = System.currentTimeMillis();
+
+                //Handle the stream
+                streamImages();
             }
+        }
+    }
+
+    private void streamImages(){
+        try {
 
             Log.d("TCP Client", "C: Connecting...");
 
@@ -80,38 +104,45 @@ public class TCPClient {
                 };
 
                 while (!s.isClosed()) {
+                    if(System.currentTimeMillis() - MainActivity.shutterTimeStamp >= MainActivity.shutterTimeInterval || MainActivity.shutterTimeStamp == 0){
+                        s.close();
+                    }else{
+                        timeStampStart = System.currentTimeMillis();
 
-                    timeStampStart = System.currentTimeMillis();
+                        for(int i = 0; i < server_params.length; i++){
+                            message = server_params[i];
+                            bufferOut.write(message);
+                        }
 
-                    for(int i = 0; i < server_params.length; i++){
-                        message = server_params[i];
-                        bufferOut.write(message);
+                        doHeaderStuff();
+
+                        rec_bytes = 0;
+                        imageData = new byte[tot_bytes];
+                        b = new byte[66000];
+                        while (rec_bytes < tot_bytes){
+                            amountRead = bufferIn.read(b);
+                            addDataFromArray(imageData, b, rec_bytes, amountRead);
+                            rec_bytes += amountRead;
+                        }
+
+
+                        //if(MainActivity.offset14bit == 0.)
+                        //getGain(imageData);
+
+
+                        if(MainActivity.stream.size() < 5){
+                            MainActivity.stream.add(new RawImageData(imageData, getGain(imageData)));
+                        }
+
+                        // Send server an ack message
+                        bufferOut.write(ack);
+
+                        timeStampEnd = System.currentTimeMillis();
+                        log.setGetImageDataTime(timeStampEnd-timeStampStart);
                     }
-
-                    doHeaderStuff();
-
-                    rec_bytes = 0;
-                    imageData = new byte[tot_bytes];
-                    b = new byte[66000];
-                    while (rec_bytes < tot_bytes){
-                        amountRead = bufferIn.read(b);
-                        addDataFromArray(imageData, b, rec_bytes, amountRead);
-                        rec_bytes += amountRead;
-                    }
-
-                    if(MainActivity.stream.size() < 5){
-                        MainActivity.stream.add(imageData);
-                    }
-
-                    // Send server an ack message
-                    bufferOut.write(ack);
-
-                    timeStampEnd = System.currentTimeMillis();
-                    log.setGetImageDataTime(timeStampEnd-timeStampStart);
-
                 }
 
-                }catch (Exception e) {
+            }catch (Exception e) {
                 Log.e("TCP", "S: Error", e);
             }
 
@@ -120,6 +151,38 @@ public class TCPClient {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     *
+     * @param data where the offset for 14-bit conversion is stored.
+     */
+    private void getOffset(byte[] data){
+        int b1, b2;
+        int b3;
+        b1 = data[3] & 0xff; b2 = data[4] & 0xff;
+        b3 = ((b2 << 8) | b1);
+        MainActivity.offset14bit = b3;
+    }
+
+    /**
+     *
+     * @param data where the gain for 14-bit conversion is stored.
+     */
+    private double getGain(byte[] data){
+        int b1, b2, b3, b4, a, b, c, d;
+
+        b1 = data[1] & 0xff; b2 = data[2] & 0xff; b3 = data[3] & 0xff; b4 = data[4] & 0xff;
+
+        a = (b1 >> 4) | (b2 << 4);
+
+        b = ((b4 & 0xf) << 8) | b3;
+
+        c = (b << 12);
+
+        d = c + a;
+
+       return d / 16834.0;
     }
 
     /**

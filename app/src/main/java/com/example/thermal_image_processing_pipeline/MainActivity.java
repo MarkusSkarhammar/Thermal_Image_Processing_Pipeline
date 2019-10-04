@@ -6,24 +6,19 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.SeekBar;
-import android.widget.Switch;
-import android.widget.TextView;
 
-import com.Network.thermal_image_processing_pipeline.SSHConnection;
 import com.Network.thermal_image_processing_pipeline.TCPClient;
-import com.google.android.material.textfield.TextInputEditText;
 import com.log.log;
+import com.pipeline.thermal_image_processing_pipeline.MeasureCenter;
+import com.pipeline.thermal_image_processing_pipeline.MotionDetectionBFS;
 import com.pipeline.thermal_image_processing_pipeline.MotionDetectionHOG;
-import com.pipeline.thermal_image_processing_pipeline.MotionDetectionS;
+import com.pipeline.thermal_image_processing_pipeline.MotionDetectionMNET;
 import com.pipeline.thermal_image_processing_pipeline.Pipeline;
+import com.pipeline.thermal_image_processing_pipeline.RawImageData;
 
 import java.util.ArrayList;
 
@@ -41,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TCPClient tcpClient;
 
-    public static ArrayList<byte[]> stream = new ArrayList<>();
+    public static ArrayList<RawImageData> stream = new ArrayList<>();
     public static ArrayList<PGMImage> imageStreamOffline = new ArrayList<>();
     public static ArrayList<PGMImage> imageStream = new ArrayList<>();
     private ArrayList<SubArray> subArrays = new ArrayList<>();
@@ -63,16 +58,27 @@ public class MainActivity extends AppCompatActivity {
 
     // Motion sensor stuff.
     public static int threshold_value = 25, contourArea_value = 500;
-    public static int sensorType = 2;
-    public static boolean sensorChange = false;
+    public static int detectionType = 0;
+    public static boolean detectionTypeChange = false;
 
-    //Denoise
-    public static boolean denoising = false;
-    //Shutter and gain
+    // Denoise
+    public static boolean denoising = true;
+    // Shutter and gain
     public static boolean shutterGain = true;
-    //CLAHE
+    // CLAHE
     public static boolean CLAHE = true;
 
+    // Display False Color toggle.
+    public static boolean FalseColor = false;
+
+    //14-bit conversion
+    public static double offset14bit = 0.;
+    public static double gain14bit = 0.;
+
+    //Shutter image settings
+    public static long shutterTimeStamp = 0;
+    public static long shutterTimeInterval = 12*60*1000;
+    public static int NBR_SHUTTER_IMAGES = 8;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,51 +146,82 @@ public class MainActivity extends AppCompatActivity {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                long timeStampStart, timeStampEnd;
+                long timeStampStart, timeStampStart2, timeStampEnd;
                 ImageView imgView = findViewById(R.id.imageView1);
 
-                MotionDetectionS mdS = new MotionDetectionS();
+                MotionDetectionBFS mdS = new MotionDetectionBFS();
                 MotionDetectionHOG mdHOG = new MotionDetectionHOG();
+                MotionDetectionMNET mdMNET = new MotionDetectionMNET(getAssets(), getFilesDir());
+                MeasureCenter sMC = new MeasureCenter();
 
                 int pos = 0;
 
                 while(run){
                     if(stream != null && stream.size() > 0){
                         if(stream.size() > 0){
+
                             timeStampStart = System.currentTimeMillis();
                             imageTemp = generateColorsFromImageBytes(stream.remove(0));
-                            //Bitmap b = DisplayHandler.generateBitmapFromPGM(imageTemp);
+                            //int i = imageTemp.getMaxValue();
+                            timeStampEnd = System.currentTimeMillis();
+                            log.shutterAndGainTime += timeStampEnd - timeStampStart;
+
                             pipeline.processImage(imageTemp);
                             imageStream.add(imageTemp);
+
                             log.imageCount++;
+                            log.totalImageAmount++;
                             timeStampEnd = System.currentTimeMillis();
                             log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
-                            if (MainActivity.sensorType == 0) {
+                            if (MainActivity.detectionType == 1) {
+                                sMC.detect(imageTemp);
+                            } else if(MainActivity.detectionType == 2){
                                 mdS.detect(imageTemp);
-                            } else if(MainActivity.sensorType == 1){
+                            } else if(MainActivity.detectionType == 3){
                                 mdHOG.detect(imageTemp);
+                            } else if(MainActivity.detectionType == 4){
+                                mdMNET.detect(imageTemp);
                             }
+
+                            if (FalseColor == true) {
+                                com.pipeline.thermal_image_processing_pipeline.FalseColor.color(imageTemp);
+                            }
+
 
                         }
                     }else if(imageStreamOffline.size() > 0){
                         timeStampStart = System.currentTimeMillis();
                         // imageTemp = generateColorsFromImageBytes(stream.remove(0));
+                        //Bitmap bShutter = DisplayHandler.generateBitmapFromArray(pipeline.getShutter());
                         imageTemp = new PGMImage(imageStreamOffline.get(pos).getDataList());
+                        //Bitmap b = DisplayHandler.generateBitmapFromArray(imageTemp.getDataList());
                         pipeline.applyShutterAndGainToImage(imageTemp);
+                        //Bitmap b2 = DisplayHandler.generateBitmapFromPGM(imageTemp);
                         pipeline.processImage(imageTemp);
+                        //Bitmap b3 = DisplayHandler.generateBitmapFromPGM(imageTemp);
                         imageStream.add(imageTemp);
                         timeStampEnd = System.currentTimeMillis();
                         log.setProcessImageDataTime(timeStampEnd-timeStampStart);
 
-                        if (MainActivity.sensorType == 0) {
+                        if (MainActivity.detectionType == 1) {
+                            sMC.detect(imageTemp);
+                        } else if(MainActivity.detectionType == 2){
                             mdS.detect(imageTemp);
-                        } else if(MainActivity.sensorType == 1){
+                        } else if(MainActivity.detectionType == 3){
                             mdHOG.detect(imageTemp);
+                        } else if(MainActivity.detectionType == 4){
+                            mdMNET.detect(imageTemp);
                         }
+
+                        if (FalseColor == true) {
+                            com.pipeline.thermal_image_processing_pipeline.FalseColor.color(imageTemp);
+                        }
+
                         pos++;
                         if(pos >= imageStreamOffline.size()) pos=0;
                     }
+
                     if(imageStream.size() > 0)
                         gui.updateView(MainActivity.this, imgView);
                 }
@@ -200,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
      * @param imageData The frame's pixel data.
      * @return Processed data as an int array;
      */
-    private PGMImage generateColorsFromImageBytes(final byte[] imageData){
+    private PGMImage generateColorsFromImageBytes(final RawImageData imageData){
 
         // Generate an amount of thread.
         if(imageData != null) {
@@ -268,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
      * @param threadName Name of the thread.
      * @return The generated thread.
      */
-    private Thread generateColorsFromImagesBytesWithinRange(final byte[] imageData, final int wFrom, final int hFrom, final int wTo, final int hTo, final int threadName){
+    private Thread generateColorsFromImagesBytesWithinRange(final RawImageData imageData, final int wFrom, final int hFrom, final int wTo, final int hTo, final int threadName){
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -282,15 +319,16 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Conver a section of the raw frame data into an array of int.
-     * @param imageData The raw frame data.
+     * @param RawImage The container class for the frame data.
      * @param wFrom Star width position.
      * @param hFrom Start height position.
      * @param wTo End width position.
      * @param hTo End height position.
      */
-    private void generateColorsFromImageBytes(final byte[] imageData, int wFrom, int hFrom, int wTo, int hTo, final int pos){
+    private void generateColorsFromImageBytes(final RawImageData RawImage, int wFrom, int hFrom, int wTo, int hTo, final int pos){
         SubArray sbTemp = subArrays.get(pos);
         int length = (wTo-wFrom)*(hTo-hFrom);
+        byte[] imageData = RawImage.getData();
         int[] tempData = new int[length];
         int[] tempDataRaw = new int[length];
         final int[] shutterValues = pipeline.getShutter();
@@ -298,6 +336,8 @@ public class MainActivity extends AppCompatActivity {
         final int mean = pipeline.getMean();
         int temp, b1, b2 = 0, b3 = 0, colorValue;
         int dataIndex = (int)(hFrom*str_w*1.5);
+        double gain14bit = RawImage.getGain();
+
 
         for(int h=hFrom; h<hTo;h++)
             for(int w=wFrom;w<wTo;w++){
@@ -310,10 +350,11 @@ public class MainActivity extends AppCompatActivity {
                     temp = (b2 >> 4) | (b3 << 4);
                     dataIndex += 2;
                 }
-                if(shutterGain) temp = (int)( (float)(temp - shutterValues[(h*str_w) + w]) * (gain[(h*str_w) + w]) + mean);
-                //tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
-                colorValue = (int)(((double)temp / 4095.0) * 255);
-                tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = colorValue;
+                //temp = (int)((temp + offset14bit)/gain14bit);
+                tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
+                if(shutterGain) temp = (int)( (float)( (temp - (shutterValues[(h*str_w) + w] * gain14bit))) * gain[(h*str_w) + w] + (mean * gain14bit));
+                colorValue = (int)(((double)temp / 4096.0) * 255);
+                // tempDataRaw[((h-hFrom)*str_w) + (w-wFrom)] = temp;
                 tempData[((h-hFrom)*str_w) + (w-wFrom)] = 0xff000000 | (colorValue << 16) | (colorValue << 8) | colorValue;
             }
 

@@ -15,10 +15,10 @@ import static com.example.thermal_image_processing_pipeline.MainActivity.CLAHE;
 import static com.example.thermal_image_processing_pipeline.MainActivity.contourArea_value;
 import static com.example.thermal_image_processing_pipeline.MainActivity.denoising;
 import static com.example.thermal_image_processing_pipeline.MainActivity.imageStream;
-import static com.example.thermal_image_processing_pipeline.MainActivity.sensorType;
 import static com.example.thermal_image_processing_pipeline.MainActivity.shutterGain;
 import static com.example.thermal_image_processing_pipeline.MainActivity.stream;
 import static com.example.thermal_image_processing_pipeline.MainActivity.threshold_value;
+import static com.example.thermal_image_processing_pipeline.MainActivity.FalseColor;
 
 public class GUI {
 
@@ -46,7 +46,7 @@ public class GUI {
             brightness.setOnSeekBarChangeListener(seekBarListener);
             contrast.setOnSeekBarChangeListener(seekBarListener);
             sharpening.setOnSeekBarChangeListener(seekBarListener);
-            sensorType.setProgress(2);
+            sensorType.setProgress(0);
             sensorType.setOnSeekBarChangeListener(seekBarListener);
 
         }
@@ -123,6 +123,22 @@ public class GUI {
                 }
             });
         }
+
+        //Setup False Color toggle
+        {
+            final Switch FalseColorToggle = a.findViewById(R.id.FalseColor);
+            FalseColorToggle.setChecked(false);
+            FalseColorToggle.setOnClickListener( new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    FalseColor = !FalseColor;
+                }
+            });
+        }
+
+
+
     }
 
     /**
@@ -166,16 +182,18 @@ public class GUI {
             public void run() {
                 if(imageStream != null && imageStream.size() > 0){
                     imageTemp = imageStream.get(0);
-                    if(imageTemp.getProcessedBitmap() != null){
+                    if(imageTemp != null && imageTemp.getProcessedBitmap() != null){
                         DisplayHandler.DrawCanvas(imageTemp.getProcessedBitmap(), imgView);
                         imageStream.remove(0);
                         log.setAmountInStream(stream.size());
                         log.checkFPS();
                         log.writeToOutputs();
                     }
-                    if(MainActivity.sensorChange = true){
+
+                    /*
+                    if(MainActivity.detectionTypeChange = true){
                         TextView textView = a.findViewById(R.id.SensorTypeText);
-                        switch (sensorType){
+                        switch (detectionType){
                             case 0:
                                 textView.setText("Sensor type: motion detection");
                                 break;
@@ -186,8 +204,10 @@ public class GUI {
                                 textView.setText("Sensor type: none");
                                 break;
                         }
-                        MainActivity.sensorChange = false;
+                        MainActivity.detectionTypeChange = false;
                     }
+                    */
+
                 }
             }
         });

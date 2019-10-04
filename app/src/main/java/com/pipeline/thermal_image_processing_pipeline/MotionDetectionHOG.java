@@ -9,6 +9,7 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfRect;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
@@ -35,7 +36,7 @@ public class MotionDetectionHOG {
     public void detect(PGMImage image) {
 
         // Convert image to something OpenCV can handle.
-        Bitmap b = DisplayHandler.generateBitmapFromPGM(image);
+        Bitmap b = image.getProcessedBitmap();
         Mat currentFrame = new Mat(b.getWidth(), b.getHeight(), CV_8UC1);
         Utils.bitmapToMat(b, currentFrame);
 
@@ -58,8 +59,11 @@ public class MotionDetectionHOG {
             Imgproc.rectangle(currentFrame, facesArray[i].tl(), facesArray[i].br(), new Scalar(100), 3);
         }
 
+        // Show sensor type.
+        Imgproc.putText(currentFrame, "HOG", new Point(5, 270), Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0,255,255),2);
+
+        // Display frame.
         Utils.matToBitmap(currentFrame, b);
-        image.setProcessedBitmap(b);
 
     }
 
